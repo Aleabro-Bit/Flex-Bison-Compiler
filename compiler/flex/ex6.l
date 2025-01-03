@@ -5,20 +5,19 @@
 char *st;
 int num;
 enum {
-	EOL = 0,
-	NUM,
-	STR,
+	NUM=1,
+	STR=2,
 	};
 void add_string(char ch);
 
 %}
 
 %x STRING COMMENT
-NUMBER (0|[1-9][0-9]*)
+
 
 %%
 
-{NUMBER}	{ num = atoi(yytext); return NUM; }
+(0|[1-9][0-9]*)	{ num = atoi(yytext); return NUM; }
 
 "\"" {BEGIN(STRING);}
 <STRING>"\\k"	{ add_string('\n'); }
@@ -37,18 +36,18 @@ int main(void)
 st = malloc(1);
 st[0] = '\0';
 int tok;
-do
+while (tok = yylex())
 {
-tok = yylex();
+
 switch(tok){
 	case STR:
 		printf("String: '%s'\n", st);
 		break;
 	case NUM:
-                printf("Number: '%d'\n", num);
-                break;
+        printf("Number: '%d'\n", num);
+        break;
 	}
-}while (tok != EOL);
+}
 return 0;
 }
 

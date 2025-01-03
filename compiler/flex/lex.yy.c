@@ -456,15 +456,14 @@ char *yytext;
 char *st;
 int num;
 enum {
-	EOL = 0,
-	NUM,
-	STR,
+	NUM=1,
+	STR=2,
 	};
 void add_string(char ch);
 
-#line 466 "lex.yy.c"
+#line 465 "lex.yy.c"
 
-#line 468 "lex.yy.c"
+#line 467 "lex.yy.c"
 
 #define INITIAL 0
 #define STRING 1
@@ -683,10 +682,10 @@ YY_DECL
 		}
 
 	{
-#line 19 "ex6.l"
+#line 18 "ex6.l"
 
 
-#line 690 "lex.yy.c"
+#line 689 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -745,56 +744,56 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 21 "ex6.l"
+#line 20 "ex6.l"
 { num = atoi(yytext); return NUM; }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 23 "ex6.l"
+#line 22 "ex6.l"
 {BEGIN(STRING);}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 24 "ex6.l"
+#line 23 "ex6.l"
 { add_string('\n'); }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 25 "ex6.l"
+#line 24 "ex6.l"
 { BEGIN(INITIAL); return STR;}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 26 "ex6.l"
+#line 25 "ex6.l"
 { add_string('"'); }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 27 "ex6.l"
+#line 26 "ex6.l"
 { add_string(*yytext); }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 29 "ex6.l"
+#line 28 "ex6.l"
 {BEGIN(COMMENT);}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 30 "ex6.l"
+#line 29 "ex6.l"
 {BEGIN(INITIAL);}
 	YY_BREAK
 case 9:
 /* rule 9 can match eol */
 YY_RULE_SETUP
-#line 31 "ex6.l"
+#line 30 "ex6.l"
 
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 33 "ex6.l"
+#line 32 "ex6.l"
 ECHO;
 	YY_BREAK
-#line 798 "lex.yy.c"
+#line 797 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(STRING):
 case YY_STATE_EOF(COMMENT):
@@ -1801,7 +1800,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 33 "ex6.l"
+#line 32 "ex6.l"
 
 
 int main(void)
@@ -1809,18 +1808,18 @@ int main(void)
 st = malloc(1);
 st[0] = '\0';
 int tok;
-do
+while (tok = yylex())
 {
-tok = yylex();
+
 switch(tok){
 	case STR:
 		printf("String: '%s'\n", st);
 		break;
 	case NUM:
-                printf("Number: '%d'\n", num);
-                break;
+        printf("Number: '%d'\n", num);
+        break;
 	}
-}while (tok != EOL);
+}
 return 0;
 }
 
