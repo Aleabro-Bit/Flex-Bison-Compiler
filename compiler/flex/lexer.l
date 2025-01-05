@@ -1,10 +1,8 @@
 %{
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+
+#include "parser.tab.h"
 
 
-int num;
 enum {
     NUM = 1,
     STR,
@@ -31,15 +29,20 @@ struct {
 
 %}
 %option noyywrap nounput noinput
+ID [a-zA-Z][a-zA-Z0-9_]*
+DEC [0-9]+
+BIN 0[bB][01]+ 
+ROM M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*)
 %x STRING COMMENT
 
 %%
-"define"        { return KEYWORD; }
+
+"define"        { return KEYWORD; } // Define keyword
 "return"        { return KEYWORD; }
-"if"            { return KEYWORD; }
-"else"          { return KEYWORD; }
-"while"         { return KEYWORD; }
-"from"          { return KEYWORD; }
+"whether"       { return KEYWORD; } // If keyword
+"otherwise"     { return KEYWORD; } // Else keyword
+"when"          { return KEYWORD; } // While keyword
+"from"          { return KEYWORD; } // For keyword
 "to"            { return KEYWORD; }
 "step"          { return KEYWORD; }
 "list"          { return DATA_TYPE; }
@@ -48,17 +51,7 @@ struct {
 "string"        { return DATA_TYPE; }
 "boolean"       { return DATA_TYPE; }
 
-"="            { return OPERATOR; }
-"=="           { return OPERATOR; }
-"+"            { return OPERATOR; }
-"-"            { return OPERATOR; }
-"*"            { return OPERATOR; }
-"/"            { return OPERATOR; }
-"<"            { return OPERATOR; }
-">"            { return OPERATOR; }
-"&&"           { return OPERATOR; }
-"||"           { return OPERATOR; }
-"!"            { return OPERATOR; }
+"==" | "+" | "-" | "*" | "/" | "<" | ">" | "&&" | "||" | "!" { return yytext[0]; }
 
 "{"            { return SPECIAL_CHAR; }
 "}"            { return SPECIAL_CHAR; }
@@ -70,16 +63,13 @@ struct {
 "func"          { return FUNC; }
 \n            { return INSTRUCTION; }
 
-[1-9][0-9]*	{ yylval.num = atoi(yytext); return NUM; }
-0[bB][01]+  { yylval.num = strtol(yytext + 2, NULL, 2); return BINARY; }
-M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3}) { 
-    yylval.num = roman_to_int(yytext); 
-    return ROMAN; 
-}
+{DEC}	{ yylval.num = atoi(yytext); return NUM; }
+{BIN}       { yylval.num = strtol(yytext + 2, NULL, 2); return BINARY; }
+{ROM}       { yylval.num = roman_to_int(yytext); return ROMAN; }
 
 "<<" {BEGIN(STRING);}
 <STRING>"\\k"	{ add_string('\n'); }
-<STRING>">>"	{ BEGIN(INITIAL); return STR;}
+<STRING>">>"	{ BEGIN(INITIAL); return STR; }
 <STRING>"\"\""	{ add_string('"'); }
 <STRING>.	{ add_string(*yytext); }
 
@@ -93,7 +83,7 @@ int|char|float|const|enum|extern|long|double|void|if|else|while|for|auto|return 
 }
 
 
-[a-zA-Z][a-zA-Z0-9_]{0,31} {
+{ID} {
     yylval.st = strdup(yytext);
     return IDENTIFIER;
 }
@@ -136,16 +126,15 @@ void print_token(int token) {
             printf("String: %s\n", yylval.st);
             break;
         case FUNC:
-            printf("Function declaration: '%s'\n", yytext);
+            printf("Function declaration: '%s'\n", yylval.st);
             break;
         case IDENTIFIER:
-            printf("Identifier: %s\n", yylval.st);
+            printf("Identifier: %s\n", yytext);
             break;
         case KEYWORD:
             printf("Keyword");
             break;
-        default:
-            printf("Unknown token\n");
+        
     }
 }
 
