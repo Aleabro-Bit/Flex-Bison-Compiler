@@ -22,38 +22,32 @@ int get_variable_value(char *name);
 %union {
     double num;
     char *st;
-    char op;
-    
 }
 
+%token PLUS MINUS MUL DIV EQ GT GE LT LE POW NOTEQUAL
 %token <num> NUM BINARY ROMAN
-%token <st> STR IDENTIFIER FUNC KEYWORD DATA_TYPE
-%token <op> OPERATOR
-//%token <fn> FUNCTION
-%token WHETHER THEN OTHERWISE WHEN LET FROM TO STEP
-
-
+%token <st> STR ID FUNC KEYWORD DATA_TYPE SPECIAL_CHAR 
 
 %type <num> TERM 
-//%type <str> statement
 
 %right '='
-%left  minus add
-%left  '*' '/'
-%right '^'
+%left  PLUS MINUS
+%left  MUL DIV
+%right POW
 %start START
 %%
+
 START: START TERM ';' { printf("R: %f\n", $2); }
      | %empty
 
-TERM: TERM minus TERM { $$ = $1 - $3; }
-    | TERM add TERM { $$ = $1 + $3; }
-    | TERM '*' TERM { $$ = $1 * $3; }
-    | TERM '/' TERM { $$ = $1 / $3; }
-    | TERM '^' TERM { $$ = pow($1, $3); }
-    | IDENTIFIER '=' TERM   { $$ = $3; vars[(int)$1[0]] = $3; }
+TERM: TERM MINUS TERM { $$ = $1 - $3; }
+    | TERM PLUS TERM { $$ = $1 + $3; }
+    | TERM MUL TERM { $$ = $1 * $3; }
+    | TERM DIV TERM { $$ = $1 / $3; }
+    | TERM POW TERM { $$ = pow($1, $3); }
+    | ID '=' TERM   { $$ = $3; vars[(int)$1[0]] = $3; }
     | NUM /* default action: $$ = $1 */
-    | IDENTIFIER { $$ = vars[(int)$1[0]]; }
+    | ID { $$ = vars[(int)$1[0]]; }
     
 
 

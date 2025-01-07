@@ -54,25 +54,26 @@ extern int yydebug;
     YYEOF = 0,                     /* "end of file"  */
     YYerror = 256,                 /* error  */
     YYUNDEF = 257,                 /* "invalid token"  */
-    NUM = 258,                     /* NUM  */
-    BINARY = 259,                  /* BINARY  */
-    ROMAN = 260,                   /* ROMAN  */
-    STR = 261,                     /* STR  */
-    IDENTIFIER = 262,              /* IDENTIFIER  */
-    FUNC = 263,                    /* FUNC  */
-    KEYWORD = 264,                 /* KEYWORD  */
-    DATA_TYPE = 265,               /* DATA_TYPE  */
-    OPERATOR = 266,                /* OPERATOR  */
-    WHETHER = 267,                 /* WHETHER  */
-    THEN = 268,                    /* THEN  */
-    OTHERWISE = 269,               /* OTHERWISE  */
-    WHEN = 270,                    /* WHEN  */
-    LET = 271,                     /* LET  */
-    FROM = 272,                    /* FROM  */
-    TO = 273,                      /* TO  */
-    STEP = 274,                    /* STEP  */
-    minus = 275,                   /* minus  */
-    add = 276                      /* add  */
+    PLUS = 258,                    /* PLUS  */
+    MINUS = 259,                   /* MINUS  */
+    MUL = 260,                     /* MUL  */
+    DIV = 261,                     /* DIV  */
+    EQ = 262,                      /* EQ  */
+    GT = 263,                      /* GT  */
+    GE = 264,                      /* GE  */
+    LT = 265,                      /* LT  */
+    LE = 266,                      /* LE  */
+    POW = 267,                     /* POW  */
+    NOTEQUAL = 268,                /* NOTEQUAL  */
+    NUM = 269,                     /* NUM  */
+    BINARY = 270,                  /* BINARY  */
+    ROMAN = 271,                   /* ROMAN  */
+    STR = 272,                     /* STR  */
+    ID = 273,                      /* ID  */
+    FUNC = 274,                    /* FUNC  */
+    KEYWORD = 275,                 /* KEYWORD  */
+    DATA_TYPE = 276,               /* DATA_TYPE  */
+    SPECIAL_CHAR = 277             /* SPECIAL_CHAR  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -85,10 +86,8 @@ union YYSTYPE
 
     double num;
     char *st;
-    char op;
-    
 
-#line 92 "parser.tab.h"
+#line 91 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
