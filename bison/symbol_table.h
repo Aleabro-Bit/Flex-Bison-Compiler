@@ -1,30 +1,6 @@
 #include <stdlib.h>
-/* interface to the lexer */
-extern int yylineno; /* from lexer */
-/* symbol table */
-struct symbol { /* a variable name */
- char *name;
- double value;
- struct ast *func; /* stmt for the function */
- struct symlist *syms; /* list of dummy args */
-};
-/* simple symtab of fixed size */
-#define NHASH 9997
-struct symbol symtab[NHASH];
-struct symbol *lookup(char*);
-/* list of symbols, for an argument list */
-struct symlist {
- struct symbol *sym;
- struct symlist *next;
-};
-struct symlist *newsymlist(struct symbol *sym, struct symlist *next);
-void symlistfree(struct symlist *sl);
-enum bifs { /* built-in functions */
- B_sqrt = 1,
- B_exp,
- B_log,
- B_print
-};
+#include "abstract_syntax_tree.h"
+
 /* nodes in the abstract syntax tree */
 /* all have common initial nodetype */
 struct ast {
@@ -64,7 +40,7 @@ struct symasgn {
 
 struct symlist *newsymlist(struct symbol *sym, struct symlist *next)
 {
- struct symlist *sl = malloc(sizeof(struct symlist));
+ struct symlist *sl = (struct symlist *)malloc(sizeof(struct symlist));
 
  if(!sl) {
  yyerror("out of space");
@@ -75,7 +51,7 @@ struct symlist *newsymlist(struct symbol *sym, struct symlist *next)
  return sl;
 }
 /* free a list of symbols */
-voidsymlistfree(struct symlist *sl)
+void symlistfree(struct symlist *sl)
 {
  struct symlist *nsl;
  while(sl) {

@@ -1,6 +1,6 @@
 %{
 #include "parser.tab.h"
-
+#include <abstract_syntax_tree.h>
 
 void add_string(char ch);
 void print_token(int token);
@@ -19,6 +19,7 @@ ROM M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*)
 "define"        { return DEFINE; } // Define keyword
 "return"        { return RETURN; }
 "whether"       { return WHETHER; } // If keyword
+"then"          { return THEN; } // If keyword
 "otherwise"     { return OTHERWISE; } // Else keyword
 "when"          { return WHEN; } // While keyword
 "until"         { return UNTIL; } // While keyword
@@ -38,15 +39,22 @@ ROM M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*)
 "/"     return(DIV);
 "^"     return(POW);
 "="     return(ASSIGN);
-"=="    return(EQ);
-"!="    return(NOTEQUAL);
-">"     return(GT);
-">="    return(GE);
-"<"     return(LT);
-"<="    return(LE);
-"!>"    { return STEP; }
+"!>"    return(STEP);
 "|"     return(ABS);
 
+">"     { yylval.fn = 1; return CMP;}
+"<"     { yylval.fn = 2; return CMP;}
+"<>"    { yylval.fn = 3; return CMP;}
+"=="    { yylval.fn = 4; return CMP;}
+">="    { yylval.fn = 5; return CMP;}
+"<="    { yylval.fn = 6; return CMP;}
+
+"sqrt"  { yylval.fn = B_sqrt; return FUNC;}
+"exp"   { yylval.fn = B_exp; return FUNC;}
+"log"   { yylval.fn = B_log; return FUNC;}
+"print" { yylval.fn = B_print; return FUNC;}
+
+\n      {return EOL;}
 [,:{}=()~;]	{ yylval.st = strdup(yytext); return *yytext;}
 
 {DEC}	{ yylval.num = atof(yytext); return NUM; }
@@ -73,7 +81,7 @@ int|char|float|const|enum|extern|long|double|void|if|else|while|for|auto|return 
     return ID;
 }
 
-[ \t\n]+           { ; } // [ \t\n]+
+[ \t]+           { ; } // [ \t\n]+
 .                  { return *yytext; }
 %%
 

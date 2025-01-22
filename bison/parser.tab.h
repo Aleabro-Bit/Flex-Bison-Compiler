@@ -69,30 +69,33 @@ extern int yydebug;
     UNTIL = 270,                   /* UNTIL  */
     SHIFT = 271,                   /* SHIFT  */
     EVENT = 272,                   /* EVENT  */
-    PLUS = 273,                    /* PLUS  */
-    MINUS = 274,                   /* MINUS  */
-    MUL = 275,                     /* MUL  */
-    DIV = 276,                     /* DIV  */
-    EQ = 277,                      /* EQ  */
-    GT = 278,                      /* GT  */
-    GE = 279,                      /* GE  */
-    LT = 280,                      /* LT  */
-    LE = 281,                      /* LE  */
-    POW = 282,                     /* POW  */
-    NOTEQUAL = 283,                /* NOTEQUAL  */
-    NEWLINE = 284,                 /* NEWLINE  */
-    ASSIGN = 285,                  /* ASSIGN  */
-    ABS = 286,                     /* ABS  */
-    NUMBER = 287,                  /* NUMBER  */
-    NUM = 288,                     /* NUM  */
-    BINARY = 289,                  /* BINARY  */
-    ROMAN = 290,                   /* ROMAN  */
-    STR = 291,                     /* STR  */
-    ID = 292,                      /* ID  */
-    FUNC = 293,                    /* FUNC  */
+    EOL = 273,                     /* EOL  */
+    THEN = 274,                    /* THEN  */
+    PLUS = 275,                    /* PLUS  */
+    MINUS = 276,                   /* MINUS  */
+    MUL = 277,                     /* MUL  */
+    DIV = 278,                     /* DIV  */
+    EQ = 279,                      /* EQ  */
+    GT = 280,                      /* GT  */
+    GE = 281,                      /* GE  */
+    LT = 282,                      /* LT  */
+    LE = 283,                      /* LE  */
+    POW = 284,                     /* POW  */
+    NOTEQUAL = 285,                /* NOTEQUAL  */
+    ASSIGN = 286,                  /* ASSIGN  */
+    ABS = 287,                     /* ABS  */
+    NUMBER = 288,                  /* NUMBER  */
+    NUM = 289,                     /* NUM  */
+    BINARY = 290,                  /* BINARY  */
+    ROMAN = 291,                   /* ROMAN  */
+    STR = 292,                     /* STR  */
+    ID = 293,                      /* ID  */
     KEYWORD = 294,                 /* KEYWORD  */
     DATA_TYPE = 295,               /* DATA_TYPE  */
-    SPECIAL_CHAR = 296             /* SPECIAL_CHAR  */
+    SPECIAL_CHAR = 296,            /* SPECIAL_CHAR  */
+    FUNC = 297,                    /* FUNC  */
+    CMP = 298,                     /* CMP  */
+    UMINUS = 299                   /* UMINUS  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -101,14 +104,17 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 23 "parser.y"
+#line 21 "parser.y"
 
     double num;
     char *st;
     char op;
     struct ast *a;
+    struct symbol *s; // which symbol
+    struct symlist *sl; // symbol list
+    int fn;          // which function
 
-#line 112 "parser.tab.h"
+#line 118 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
