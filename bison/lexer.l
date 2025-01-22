@@ -1,6 +1,6 @@
 %{
 #include "parser.tab.h"
-#include <abstract_syntax_tree.h>
+#include "abstract_syntax_tree.h"
 
 void add_string(char ch);
 void print_token(int token);
@@ -29,7 +29,6 @@ ROM M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*)
 "num"           { return NUMBER; }
 "string"        { return STRING; }
 "boolean"       { return BOOLEAN; }
-"func"          { return FUNC; }
 "shift"         { return SHIFT; } //Switch keyword
 "event"         { return EVENT; } //Case keyword
 
@@ -54,7 +53,7 @@ ROM M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*)
 "log"   { yylval.fn = B_log; return FUNC;}
 "print" { yylval.fn = B_print; return FUNC;}
 
-\n      {return EOL;}
+
 [,:{}=()~;]	{ yylval.st = strdup(yytext); return *yytext;}
 
 {DEC}	{ yylval.num = atof(yytext); return NUM; }
@@ -82,6 +81,7 @@ int|char|float|const|enum|extern|long|double|void|if|else|while|for|auto|return 
 }
 
 [ \t]+           { ; } // [ \t\n]+
+\n      {return EOL;}
 .                  { return *yytext; }
 %%
 

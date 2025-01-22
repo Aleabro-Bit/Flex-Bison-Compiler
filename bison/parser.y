@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <abstract_syntax_tree.h>
+#include "abstract_syntax_tree.h"
 
 int yydebug = 1;
 extern int yylineno;
@@ -21,7 +21,7 @@ int get_variable_value(char *name);
 %union {
     double num;
     char *st;
-    char op;
+    char *op;
     struct ast *a;
     struct symbol *s; // which symbol
     struct symlist *sl; // symbol list
@@ -31,8 +31,9 @@ int get_variable_value(char *name);
 %token BOOLEAN DOUBLE INT LIST STEP TO FROM WHEN OTHERWISE WHETHER RETURN DEFINE UNTIL SHIFT EVENT EOL THEN 
 %token <op> PLUS MINUS MUL DIV POW ASSIGN ABS
 %token <num> NUMBER NUM BINARY ROMAN
-%token <st> STR ID KEYWORD DATA_TYPE SPECIAL_CHAR
+%token <st> STR KEYWORD DATA_TYPE SPECIAL_CHAR
 %token <fn> FUNC 
+%token <s> ID
 
 %type <a> expression statement statements whether when from shift condition list explist
 %type <sl> symlist
@@ -47,7 +48,7 @@ int get_variable_value(char *name);
 %%
 
 START: /* nothing */
-    | START statement EOL { printf("= %4.4g\n",eval($2)); treefree($2); }
+    | START statement EOL { printf("= %4.4g\n>", eval($2)); treefree($2); }
     | START DEFINE ID '(' symlist ')' ASSIGN list EOL { 
         dodef($3, $5, $8);
         printf("Defined %s\n> ", $3->name); }
@@ -56,8 +57,7 @@ START: /* nothing */
 statements: statement
     | statements statement
     ;
-statement: 
-    | whether
+statement: whether
     | when
     | from
     | shift

@@ -75,27 +75,21 @@ extern int yydebug;
     MINUS = 276,                   /* MINUS  */
     MUL = 277,                     /* MUL  */
     DIV = 278,                     /* DIV  */
-    EQ = 279,                      /* EQ  */
-    GT = 280,                      /* GT  */
-    GE = 281,                      /* GE  */
-    LT = 282,                      /* LT  */
-    LE = 283,                      /* LE  */
-    POW = 284,                     /* POW  */
-    NOTEQUAL = 285,                /* NOTEQUAL  */
-    ASSIGN = 286,                  /* ASSIGN  */
-    ABS = 287,                     /* ABS  */
-    NUMBER = 288,                  /* NUMBER  */
-    NUM = 289,                     /* NUM  */
-    BINARY = 290,                  /* BINARY  */
-    ROMAN = 291,                   /* ROMAN  */
-    STR = 292,                     /* STR  */
-    ID = 293,                      /* ID  */
-    KEYWORD = 294,                 /* KEYWORD  */
-    DATA_TYPE = 295,               /* DATA_TYPE  */
-    SPECIAL_CHAR = 296,            /* SPECIAL_CHAR  */
-    FUNC = 297,                    /* FUNC  */
-    CMP = 298,                     /* CMP  */
-    UMINUS = 299                   /* UMINUS  */
+    POW = 279,                     /* POW  */
+    ASSIGN = 280,                  /* ASSIGN  */
+    ABS = 281,                     /* ABS  */
+    NUMBER = 282,                  /* NUMBER  */
+    NUM = 283,                     /* NUM  */
+    BINARY = 284,                  /* BINARY  */
+    ROMAN = 285,                   /* ROMAN  */
+    STR = 286,                     /* STR  */
+    KEYWORD = 287,                 /* KEYWORD  */
+    DATA_TYPE = 288,               /* DATA_TYPE  */
+    SPECIAL_CHAR = 289,            /* SPECIAL_CHAR  */
+    FUNC = 290,                    /* FUNC  */
+    ID = 291,                      /* ID  */
+    CMP = 292,                     /* CMP  */
+    UMINUS = 293                   /* UMINUS  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -108,13 +102,13 @@ union YYSTYPE
 
     double num;
     char *st;
-    char op;
+    char *op;
     struct ast *a;
     struct symbol *s; // which symbol
     struct symlist *sl; // symbol list
     int fn;          // which function
 
-#line 118 "parser.tab.h"
+#line 112 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
