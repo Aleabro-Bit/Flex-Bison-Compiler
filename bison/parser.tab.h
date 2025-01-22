@@ -54,26 +54,45 @@ extern int yydebug;
     YYEOF = 0,                     /* "end of file"  */
     YYerror = 256,                 /* error  */
     YYUNDEF = 257,                 /* "invalid token"  */
-    PLUS = 258,                    /* PLUS  */
-    MINUS = 259,                   /* MINUS  */
-    MUL = 260,                     /* MUL  */
-    DIV = 261,                     /* DIV  */
-    EQ = 262,                      /* EQ  */
-    GT = 263,                      /* GT  */
-    GE = 264,                      /* GE  */
-    LT = 265,                      /* LT  */
-    LE = 266,                      /* LE  */
-    POW = 267,                     /* POW  */
-    NOTEQUAL = 268,                /* NOTEQUAL  */
-    NUM = 269,                     /* NUM  */
-    BINARY = 270,                  /* BINARY  */
-    ROMAN = 271,                   /* ROMAN  */
-    STR = 272,                     /* STR  */
-    ID = 273,                      /* ID  */
-    FUNC = 274,                    /* FUNC  */
-    KEYWORD = 275,                 /* KEYWORD  */
-    DATA_TYPE = 276,               /* DATA_TYPE  */
-    SPECIAL_CHAR = 277             /* SPECIAL_CHAR  */
+    BOOLEAN = 258,                 /* BOOLEAN  */
+    DOUBLE = 259,                  /* DOUBLE  */
+    INT = 260,                     /* INT  */
+    LIST = 261,                    /* LIST  */
+    STEP = 262,                    /* STEP  */
+    TO = 263,                      /* TO  */
+    FROM = 264,                    /* FROM  */
+    WHEN = 265,                    /* WHEN  */
+    OTHERWISE = 266,               /* OTHERWISE  */
+    WHETHER = 267,                 /* WHETHER  */
+    RETURN = 268,                  /* RETURN  */
+    DEFINE = 269,                  /* DEFINE  */
+    UNTIL = 270,                   /* UNTIL  */
+    SHIFT = 271,                   /* SHIFT  */
+    EVENT = 272,                   /* EVENT  */
+    PLUS = 273,                    /* PLUS  */
+    MINUS = 274,                   /* MINUS  */
+    MUL = 275,                     /* MUL  */
+    DIV = 276,                     /* DIV  */
+    EQ = 277,                      /* EQ  */
+    GT = 278,                      /* GT  */
+    GE = 279,                      /* GE  */
+    LT = 280,                      /* LT  */
+    LE = 281,                      /* LE  */
+    POW = 282,                     /* POW  */
+    NOTEQUAL = 283,                /* NOTEQUAL  */
+    NEWLINE = 284,                 /* NEWLINE  */
+    ASSIGN = 285,                  /* ASSIGN  */
+    ABS = 286,                     /* ABS  */
+    NUMBER = 287,                  /* NUMBER  */
+    NUM = 288,                     /* NUM  */
+    BINARY = 289,                  /* BINARY  */
+    ROMAN = 290,                   /* ROMAN  */
+    STR = 291,                     /* STR  */
+    ID = 292,                      /* ID  */
+    FUNC = 293,                    /* FUNC  */
+    KEYWORD = 294,                 /* KEYWORD  */
+    DATA_TYPE = 295,               /* DATA_TYPE  */
+    SPECIAL_CHAR = 296             /* SPECIAL_CHAR  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -82,12 +101,14 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 22 "parser.y"
+#line 23 "parser.y"
 
     double num;
     char *st;
+    char op;
+    struct ast *a;
 
-#line 91 "parser.tab.h"
+#line 112 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

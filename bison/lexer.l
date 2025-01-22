@@ -1,55 +1,55 @@
 %{
-
 #include "parser.tab.h"
+
 
 void add_string(char ch);
 void print_token(int token);
 int roman_to_int(const char *roman);
 
 %}
-%option noyywrap nounput noinput
+%option noyywrap nounput noinput yylineno case-insensitive
 ID [a-zA-Z][a-zA-Z0-9_]*
-DEC [0-9]+
+DEC [0-9]+(.[0-9]+)?
 BIN 0[bB][01]+ 
 ROM M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*)
 %x STRING COMMENT
 
 %%
 
-"define"        { return KEYWORD; } // Define keyword
-"return"        { return KEYWORD; }
-"whether"       { return KEYWORD; } // If keyword
-"otherwise"     { return KEYWORD; } // Else keyword
-"when"          { return KEYWORD; } // While keyword
-"from"          { return KEYWORD; } // For keyword
-"to"            { return KEYWORD; }
-"step"          { return KEYWORD; }
-"list"          { return DATA_TYPE; }
-"int"           { return DATA_TYPE; }
-"float"         { return DATA_TYPE; }
-"string"        { return DATA_TYPE; }
-"boolean"       { return DATA_TYPE; }
+"define"        { return DEFINE; } // Define keyword
+"return"        { return RETURN; }
+"whether"       { return WHETHER; } // If keyword
+"otherwise"     { return OTHERWISE; } // Else keyword
+"when"          { return WHEN; } // While keyword
+"until"         { return UNTIL; } // While keyword
+"from"          { return FROM; } // For keyword
+"to"            { return TO; }
+"list"          { return LIST; }
+"num"           { return NUMBER; }
+"string"        { return STRING; }
+"boolean"       { return BOOLEAN; }
+"func"          { return FUNC; }
+"shift"         { return SHIFT; } //Switch keyword
+"event"         { return EVENT; } //Case keyword
 
 "+"     return(PLUS);
 "-"     return(MINUS);
 "*"     return(MUL);
 "/"     return(DIV);
 "^"     return(POW);
+"="     return(ASSIGN);
 "=="    return(EQ);
 "!="    return(NOTEQUAL);
 ">"     return(GT);
 ">="    return(GE);
 "<"     return(LT);
 "<="    return(LE);
+"!>"    { return STEP; }
+"|"     return(ABS);
 
 [,:{}=()~;]	{ yylval.st = strdup(yytext); return *yytext;}
-\n          { return *yytext; }
 
-
-"func"          { return FUNC; }
-
-
-{DEC}	{ yylval.num = atoi(yytext); return NUM; }
+{DEC}	{ yylval.num = atof(yytext); return NUM; }
 {BIN}       { yylval.num = strtol(yytext + 2, NULL, 2); return BINARY; }
 {ROM}       { yylval.num = roman_to_int(yytext); return ROMAN; }
 
@@ -68,19 +68,14 @@ int|char|float|const|enum|extern|long|double|void|if|else|while|for|auto|return 
     return KEYWORD; 
 }
 
-
 {ID} {
     yylval.st = strdup(yytext);
     return ID;
 }
 
-[ \t\n]+           { ; }
-
-
+[ \t\n]+           { ; } // [ \t\n]+
 .                  { return *yytext; }
 %%
-
-
 
 void add_string(char ch)
 {
