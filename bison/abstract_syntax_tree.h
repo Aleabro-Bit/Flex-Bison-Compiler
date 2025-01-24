@@ -32,6 +32,7 @@ struct ast {
     int nodetype;
     struct ast *l;
     struct ast *r;
+    char *s;
 };
 
 struct fncall { /* built-in function */
@@ -77,6 +78,7 @@ struct ast *newcall(struct symbol *s, struct ast *l);
 struct ast *newref(struct symbol *s);
 struct ast *newasgn(struct symbol *s, struct ast *v);
 struct ast *newnum(double d);
+struct ast *newstr (char *s);
 struct ast *newflow(int nodetype, struct ast *cond, struct ast *tl, struct ast *tr);
 /* define a function */
 void dodef(struct symbol *name, struct symlist *syms, struct ast *stmts);

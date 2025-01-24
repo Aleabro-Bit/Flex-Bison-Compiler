@@ -2,14 +2,21 @@
 #include "parser.tab.h"
 #include "abstract_syntax_tree.h"
 
+static char *string_buffer = NULL;
+static size_t string_buffer_len = 0;
+
+void init_string_buffer();
 void add_string(char ch);
+char *get_string_buffer();
+void free_string_buffer();
+
 void print_token(int token);
 int roman_to_int(const char *roman);
 
 %}
 %option noyywrap nounput noinput yylineno case-insensitive
 ID [a-zA-Z][a-zA-Z0-9_]*
-DEC [0-9]+(.[0-9]+)?
+DEC [0-9]+(\.[0-9]+)?
 BIN 0[bB][01]+ 
 ROM M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*)
 %x STRING COMMENT
@@ -25,12 +32,19 @@ ROM M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*)
 "until"         { return UNTIL; } // While keyword
 "from"          { return FROM; } // For keyword
 "to"            { return TO; }
-"list"          { return LIST; }
-"num"           { return NUMBER; }
-"string"        { return STRING; }
-"boolean"       { return BOOLEAN; }
 "shift"         { return SHIFT; } //Switch keyword
 "event"         { return EVENT; } //Case keyword
+
+"num"   { yylval.fn = 1; return DATA_TYPE; }
+"str"   { yylval.fn = 2; return DATA_TYPE; }
+"bool"  { yylval.fn = 3; return DATA_TYPE; }
+"list"  { yylval.fn = 4; return DATA_TYPE; }
+"void"  { yylval.fn = 5; return DATA_TYPE; }
+"const" {yylval.fn = 6; return DATA_TYPE; }
+"enum"  {yylval.fn = 7; return DATA_TYPE; }
+"extern" {yylval.fn = 8; return DATA_TYPE; }
+"roman" {yylval.fn = 9; return DATA_TYPE; }
+"binary" {yylval.fn = 10; return DATA_TYPE; }
 
 "+"     return(PLUS);
 "-"     return(MINUS);
@@ -53,16 +67,15 @@ ROM M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*)
 "log"   { yylval.fn = B_log; return FUNC;}
 "print" { yylval.fn = B_print; return FUNC;}
 
-
 [,:{}=()~;]	{ yylval.st = strdup(yytext); return *yytext;}
 
-{DEC}	{ yylval.num = atof(yytext); return NUM; }
+{DEC}	    { yylval.num = atof(yytext); return NUM; }
 {BIN}       { yylval.num = strtol(yytext + 2, NULL, 2); return BINARY; }
 {ROM}       { yylval.num = roman_to_int(yytext); return ROMAN; }
 
 "<<" {BEGIN(STRING);}
 <STRING>"\\k"	{ add_string('\n'); }
-<STRING>">>"	{ BEGIN(INITIAL); return STR; }
+<STRING>">>"	{ BEGIN(INITIAL); yylval.st = get_string_buffer(); return STR; }
 <STRING>"\"\""	{ add_string('"'); }
 <STRING>.	{ add_string(*yytext); }
 
@@ -71,12 +84,8 @@ ROM M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*)
 <COMMENT>(.|\n)
 "---".*\n    {}
 
-int|char|float|const|enum|extern|long|double|void|if|else|while|for|auto|return { 
-    return KEYWORD; 
-}
-
 {ID} {
-    yylval.st = strdup(yytext);
+    yylval.s = lookup(yytext);
     return ID;
 }
 
@@ -85,13 +94,39 @@ int|char|float|const|enum|extern|long|double|void|if|else|while|for|auto|return 
 .                  { return *yytext; }
 %%
 
-void add_string(char ch)
-{
-int len = strlen(yylval.st);
-yylval.st = realloc (yylval.st, len+2);
-yylval.st[len] = ch;
-yylval.st[len+1] = '\0';
+void init_string_buffer() {
+    free_string_buffer(); // Free initialized buffer
+    string_buffer = malloc(1);
+    if (!string_buffer) {
+        fprintf(stderr, "Errore di memoria: impossibile allocare il buffer della stringa.\n");
+        exit(1);
+    }
+    string_buffer[0] = '\0';
+    string_buffer_len = 0;
 }
+
+void add_string(char ch) {
+    string_buffer = realloc(string_buffer, string_buffer_len + 2);
+    if (!string_buffer) {
+        fprintf(stderr, "Errore di memoria: impossibile espandere il buffer della stringa.\n");
+        exit(1);
+    }
+    string_buffer[string_buffer_len++] = ch;
+    string_buffer[string_buffer_len] = '\0'; // Null-terminate
+}
+
+char *get_string_buffer() {
+    char *result = strdup(string_buffer); // Copy the content of the buffer
+    free_string_buffer();                 
+    return result;
+}
+
+void free_string_buffer() {
+    free(string_buffer);
+    string_buffer = NULL;
+    string_buffer_len = 0;
+}
+
 
 
 int roman_to_int(const char *roman) {

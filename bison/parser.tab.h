@@ -54,42 +54,35 @@ extern int yydebug;
     YYEOF = 0,                     /* "end of file"  */
     YYerror = 256,                 /* error  */
     YYUNDEF = 257,                 /* "invalid token"  */
-    BOOLEAN = 258,                 /* BOOLEAN  */
-    DOUBLE = 259,                  /* DOUBLE  */
-    INT = 260,                     /* INT  */
-    LIST = 261,                    /* LIST  */
-    STEP = 262,                    /* STEP  */
-    TO = 263,                      /* TO  */
-    FROM = 264,                    /* FROM  */
-    WHEN = 265,                    /* WHEN  */
-    OTHERWISE = 266,               /* OTHERWISE  */
-    WHETHER = 267,                 /* WHETHER  */
-    RETURN = 268,                  /* RETURN  */
-    DEFINE = 269,                  /* DEFINE  */
-    UNTIL = 270,                   /* UNTIL  */
-    SHIFT = 271,                   /* SHIFT  */
-    EVENT = 272,                   /* EVENT  */
-    EOL = 273,                     /* EOL  */
-    THEN = 274,                    /* THEN  */
-    PLUS = 275,                    /* PLUS  */
-    MINUS = 276,                   /* MINUS  */
-    MUL = 277,                     /* MUL  */
-    DIV = 278,                     /* DIV  */
-    POW = 279,                     /* POW  */
-    ASSIGN = 280,                  /* ASSIGN  */
-    ABS = 281,                     /* ABS  */
-    NUMBER = 282,                  /* NUMBER  */
-    NUM = 283,                     /* NUM  */
-    BINARY = 284,                  /* BINARY  */
-    ROMAN = 285,                   /* ROMAN  */
-    STR = 286,                     /* STR  */
-    KEYWORD = 287,                 /* KEYWORD  */
-    DATA_TYPE = 288,               /* DATA_TYPE  */
-    SPECIAL_CHAR = 289,            /* SPECIAL_CHAR  */
-    FUNC = 290,                    /* FUNC  */
-    ID = 291,                      /* ID  */
-    CMP = 292,                     /* CMP  */
-    UMINUS = 293                   /* UMINUS  */
+    STEP = 258,                    /* STEP  */
+    TO = 259,                      /* TO  */
+    FROM = 260,                    /* FROM  */
+    WHEN = 261,                    /* WHEN  */
+    OTHERWISE = 262,               /* OTHERWISE  */
+    WHETHER = 263,                 /* WHETHER  */
+    RETURN = 264,                  /* RETURN  */
+    DEFINE = 265,                  /* DEFINE  */
+    UNTIL = 266,                   /* UNTIL  */
+    SHIFT = 267,                   /* SHIFT  */
+    EVENT = 268,                   /* EVENT  */
+    EOL = 269,                     /* EOL  */
+    THEN = 270,                    /* THEN  */
+    PLUS = 271,                    /* PLUS  */
+    MINUS = 272,                   /* MINUS  */
+    MUL = 273,                     /* MUL  */
+    DIV = 274,                     /* DIV  */
+    POW = 275,                     /* POW  */
+    ASSIGN = 276,                  /* ASSIGN  */
+    ABS = 277,                     /* ABS  */
+    NUM = 278,                     /* NUM  */
+    BINARY = 279,                  /* BINARY  */
+    ROMAN = 280,                   /* ROMAN  */
+    STR = 281,                     /* STR  */
+    FUNC = 282,                    /* FUNC  */
+    DATA_TYPE = 283,               /* DATA_TYPE  */
+    ID = 284,                      /* ID  */
+    CMP = 285,                     /* CMP  */
+    UMINUS = 286                   /* UMINUS  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -108,7 +101,7 @@ union YYSTYPE
     struct symlist *sl; // symbol list
     int fn;          // which function
 
-#line 112 "parser.tab.h"
+#line 105 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

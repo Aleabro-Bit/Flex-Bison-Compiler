@@ -5,7 +5,8 @@
 #include <math.h>
 #include "abstract_syntax_tree.h"
 
-int yydebug = 1;
+int yydebug = 0
+extern FILE *yyin;
 extern int yylineno;
 
 int yylex();
@@ -28,11 +29,11 @@ int get_variable_value(char *name);
     int fn;          // which function
 }
 
-%token BOOLEAN DOUBLE INT LIST STEP TO FROM WHEN OTHERWISE WHETHER RETURN DEFINE UNTIL SHIFT EVENT EOL THEN 
+%token STEP TO FROM WHEN OTHERWISE WHETHER RETURN DEFINE UNTIL SHIFT EVENT EOL THEN 
 %token <op> PLUS MINUS MUL DIV POW ASSIGN ABS
-%token <num> NUMBER NUM BINARY ROMAN
-%token <st> STR KEYWORD DATA_TYPE SPECIAL_CHAR
-%token <fn> FUNC 
+%token <num> NUM BINARY ROMAN
+%token <st> STR   
+%token <fn> FUNC DATA_TYPE
 %token <s> ID
 
 %type <a> expression statement statements whether when from shift condition list explist
@@ -40,7 +41,7 @@ int get_variable_value(char *name);
 
 %nonassoc <fn> CMP
 %right ASSIGN
-%left PLUS MINUS
+%left PLUS MINUS POW
 %left MUL DIV
 %nonassoc ABS UMINUS
 
@@ -52,7 +53,11 @@ START: /* nothing */
     | START DEFINE ID '(' symlist ')' ASSIGN list EOL { 
         dodef($3, $5, $8);
         printf("Defined %s\n> ", $3->name); }
+    | START DEFINE ID '(' ')' ASSIGN list EOL { 
+        dodef($3, NULL, $7);
+        printf("Defined %s\n> ", $3->name); }
     | START error EOL { yyerrok; printf("> "); }
+    | START EOL
     ;
 statements: statement
     | statements statement
@@ -88,11 +93,13 @@ expression: expression PLUS expression { $$ = newast('+', $1, $3); }
     | expression MINUS expression { $$ = newast('-', $1, $3); }
     | expression MUL expression { $$ = newast('*', $1, $3); }
     | expression DIV expression { $$ = newast('/', $1, $3); }
+    | expression POW expression { $$ = newast('^', $1, $3); }
     | ABS expression ABS { $$ = newast('|', $2, NULL); }
     | MINUS expression %prec UMINUS{ $$ = newast('M', $2, NULL); }
     | '(' expression ')' { $$ = $2; }
     | NUM { $$ = newnum($1);}
     | ID { $$ = newref($1); }
+    | STR { $$ = newstr($1); }
     | ID ASSIGN expression { $$ = newasgn($1, $3); }
     | FUNC '(' explist ')' { $$ = newfunc($1, $3); }
     | ID '(' explist ')' { $$ = newcall($1, $3); }

@@ -11,8 +11,7 @@ struct symbol symtab[NHASH];
 
 /* symbol table */
 /* hash a symbol */
-static unsigned
-symhash(char *sym)
+static unsigned symhash(char *sym)
 {
  unsigned int hash = 0;
  unsigned c;
@@ -145,6 +144,18 @@ struct ast *newflow(int nodetype, struct ast *cond, struct ast *tl, struct ast *
  return (struct ast *)a;
 }
 
+struct ast *newstr(char *s) {
+    struct ast *a = malloc(sizeof(struct ast));
+    if (!a) {
+        yyerror("out of space");
+        exit(0);
+    }
+    a->nodetype = 'S'; 
+    a->s = strdup(s); // Copia la stringa
+    free(s); // Libera la stringa originale
+    return (struct ast *)a;
+}
+
 struct symlist *newsymlist(struct symbol *sym, struct symlist *next)
 {
  struct symlist *sl = malloc(sizeof(struct symlist));
@@ -179,6 +190,7 @@ treefree(struct ast *a)
  case '-':
  case '*':
  case '/':
+ case '^':
  case '1': case '2': case '3': case '4': case '5': case '6':
  case 'L':
  treefree(a->r);
@@ -187,7 +199,7 @@ treefree(struct ast *a)
  case 'M': case 'C': case 'F':
  treefree(a->l);
  /* no subtree */
- case 'K': case 'N':
+ case 'K': case 'N': case 'S':
  break;
  case '=':
  free( ((struct symasgn *)a)->v);
@@ -217,6 +229,11 @@ double eval(struct ast *a)
  switch(a->nodetype) {
  /* constant */
  case 'K': v = ((struct numval *)a)->number; break;
+ /* string */
+ case 'S': {
+            printf("String: %s\n", a->s);
+            return 0;
+        }
  /* name reference */
  case 'N': v = ((struct symref *)a)->s->value; break;
  /* assignment */
@@ -228,6 +245,7 @@ double eval(struct ast *a)
  case '*': v = eval(a->l) * eval(a->r); break;
  case '/': v = eval(a->l) / eval(a->r); break;
  case '|': v = fabs(eval(a->l)); break;
+ case '^': v = pow(eval(a->l), eval(a->r)); break; 
  case 'M': v = -eval(a->l); break;
  /* comparisons */
  case '1': v = (eval(a->l) > eval(a->r))? 1 : 0; break;
