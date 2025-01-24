@@ -11,6 +11,7 @@ struct symbol { /* a variable name */
  double value;
  struct ast *func; /* stmt for the function */
  struct symlist *syms; /* list of dummy args */
+ int type;
 };
 
 struct symbol *lookup(char*);
@@ -76,6 +77,7 @@ struct ast *newcmp(int cmptype, struct ast *l, struct ast *r);
 struct ast *newfunc(int functype, struct ast *l);
 
 struct ast *newcall(struct symbol *s, struct ast *l);
+struct ast *newdeclare(struct symbol *name, struct symlist *args, struct ast *body);
 struct ast *newref(struct symbol *s);
 struct ast *newasgn(struct symbol *s, struct ast *v);
 struct ast *newnum(double d);
@@ -87,5 +89,7 @@ void dodef(struct symbol *name, struct symlist *syms, struct ast *stmts);
 double eval(struct ast *);
 /* delete and free an AST */
 void treefree(struct ast *);
+
+void print_ast(struct ast *node, int depth, char *prefix);
 
 

@@ -37,10 +37,11 @@ struct symbol *lookup(char* sym)
  struct symbol *sp = &symtab[symhash(sym)%NHASH];
  int scount = NHASH; /* how many have we looked at */
  while(--scount >= 0) {
- if(sp->name && !strcmp(sp->name, sym)) { return sp; }
+    if(sp->name && !strcmp(sp->name, sym)) { return sp; }
  if(!sp->name) { /* new entry */
  sp->name = strdup(sym);
  sp->value = 0;
+ sp->type = 0;
  sp->func = NULL;
  sp->syms = NULL;
  return sp;
@@ -74,6 +75,27 @@ struct ast *newcmp(int cmptype, struct ast *l, struct ast *r)
     a->r = r;
     return a;
 }
+
+struct ast *newdeclare(struct symbol *name, struct symlist *args, struct ast *body) {
+    struct ufncall *decl = (struct ufncall *)malloc(sizeof(struct ufncall));
+    if (!decl) {
+        yyerror("out of space");
+        exit(0);
+    }
+
+    decl->nodetype = 'D'; // 'D' per "declaration"
+    decl->s = name;       // Simbolo che rappresenta il nome della funzione
+    decl->l = body;       // Corpo della funzione (AST dei suoi statements)
+
+    // Assegna gli argomenti alla funzione
+    if (name->syms) {
+        symlistfree(name->syms); // Libera eventuali argomenti precedenti
+    }
+    name->syms = args;
+
+    return (struct ast *)decl;
+}
+
 
 struct ast *newfunc(int functype, struct ast *l)
 {
@@ -191,7 +213,7 @@ treefree(struct ast *a)
  case '*':
  case '/':
  case '^':
- case '1': case '2': case '3': case '4': case '5': case '6':
+ case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': 
  case 'L':
  treefree(a->r);
  /* one subtree */
@@ -239,8 +261,21 @@ double eval(struct ast *a)
  /* name reference */
  case 'N': v = ((struct symref *)a)->s->value; break;
  /* assignment */
- case '=': v = ((struct symasgn *)a)->s->value =
- eval(((struct symasgn *)a)->v); break;
+ case '=': 
+
+ struct symbol *sym = ((struct symasgn *)a)->s;
+ struct ast *val = ((struct symasgn *)a)->v;
+
+ if ((sym->type == 1 && val->nodetype != 'K') || // num
+            (sym->type == 2 && val->nodetype != 'S')) { // str
+            yyerror("Type mismatch for variable '%s'", sym->name);
+            return 0.0;
+        }
+
+        // Assegna il valore
+        v = sym->value = eval(val); 
+ 
+ break;
  /* expressions */
  case '+': v = eval(a->l) + eval(a->r); break;
  case '-': v = eval(a->l) - eval(a->r); break;
@@ -313,7 +348,8 @@ callbuiltin(struct fncall *f)
 }
 
 /* define a function */
-void dodef(struct symbol *name, struct symlist *syms, struct ast *func)
+void
+dodef(struct symbol *name, struct symlist *syms, struct ast *func)
 {
  if(name->syms) symlistfree(name->syms);
  if(name->func) treefree(name->func);
@@ -392,4 +428,38 @@ void yyerror(const char *s, ...) {
     vfprintf(stderr, s, ap);
     fprintf(stderr, "\n");
     va_end(ap);
+}
+
+// Funzione ricorsiva per stampare l'AST
+void print_ast(struct ast *node, int depth, char *prefix) {
+    if (node == NULL) {
+        return;
+    }
+
+    // Stampa il ramo con il prefisso
+    printf("%s", prefix);
+
+    // Aggiungi il nodo corrente
+    if (depth == 0) {
+        printf("Root -> ");
+    } else {
+        printf("|__ ");
+    }
+
+    // Stampa il contenuto del nodo
+    if (node->s != NULL) {
+        printf("Node type: %c, Value: %s\n", node->nodetype, node->s);
+    } else {
+        printf("Node type: %c\n", node->nodetype);
+    }
+
+    // Costruisci il nuovo prefisso per i figli
+    char new_prefix[256];
+    snprintf(new_prefix, sizeof(new_prefix), "%s%s", prefix, (depth == 0) ? "" : "    ");
+
+    // Stampa i figli
+    if (node->l && node->r) {
+        print_ast(node->l, depth + 1, new_prefix);
+        print_ast(node->r, depth + 1, new_prefix);
+    }
 }
