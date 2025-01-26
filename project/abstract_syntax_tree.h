@@ -15,6 +15,7 @@ struct symbol { /* a variable name */
 };
 
 struct symbol *lookup(char*);
+
 /* list of symbols, for an argument list */
 struct symlist {
  struct symbol *sym;
@@ -30,41 +31,19 @@ enum bifs { /* built-in functions */
 
 /* Nodes in the abstract syntax tree */
 struct ast {
-    int nodetype;
-    struct ast *l;
-    struct ast *r;
-    char *s;
-};
-
-struct fncall { /* built-in function */
- int nodetype; /* type built in function call */
- struct ast *l;
- enum bifs functype;
-};
-struct ufncall { 
- int nodetype; /* user function call */
- struct ast *l; /* list of arguments */
- struct symbol *s;
-};
-struct flow {
-int nodetype; /* type IF or While */
- struct ast *cond; /* condition */
- struct ast *tl; /* then branch or do list */
- struct ast *el; /* optional else branch */
-};
-struct symref {
- int nodetype; /* symbol ref */
- struct symbol *s;
-};
-struct symasgn {
- int nodetype; /* type = */
- struct symbol *s;
- struct ast *v; /* value */
-};
-
-struct numval {
-    int nodetype; /* constant */
-    double number;
+    int nodetype;          // Kind of node (es. 'F', 'V', 'N', etc.)
+    struct ast *l;         /* left child */
+    struct ast *r;         /* right child */
+    union {                // Campi opzionali
+        double number;     /* Value for constant nodes */
+        struct symbol *sym; // Riferimento al simbolo (per variabili o funzioni)
+        enum bifs functype; /* built-in functions */
+        struct {           /* control flow */
+            struct ast *cond; /* condition */
+            struct ast *tl;   /* then branch or do list */
+            struct ast *el;   /* optional else branch */
+        } flow;
+    } data;
 };
 
 struct symlist *newsymlist(struct symbol *sym, struct symlist *next);
