@@ -6,8 +6,11 @@
 # include "abstract_syntax_tree.h"
 
 /* simple symtab of fixed size */
-#define NHASH 9997
-struct symbol symtab[NHASH];
+/* Initial size*/
+#define NHASH 100
+struct symbol *symtab = NULL;
+size_t symtab_size = 0; // Current size
+size_t symtab_count = 0; // Number of symbols currently used
 
 /* symbol table */
 /* hash a symbol */
@@ -19,11 +22,45 @@ static unsigned symhash(char *sym)
     return hash;
 }
 
+/* Expand the symbol table */
+void expand_symtab() {
+    size_t new_size = (symtab_size == 0) ? NHASH : symtab_size * 2;
+    struct symbol *new_symtab = calloc(new_size, sizeof(struct symbol));
+    if (!new_symtab) {
+        perror("ERROR: Unable to expand symbol table");
+        exit(EXIT_FAILURE);
+    }
+
+    // Reallocate the symbols
+    for (size_t i = 0; i < symtab_size; i++) {
+        if (symtab[i].name != NULL) {
+            unsigned int new_index = symhash(symtab[i].name) % new_size;
+            unsigned int probe = 1;
+            while (new_symtab[new_index].name != NULL) {
+                new_index = (new_index + probe * probe++) % new_size; // Quadratic probing
+            }
+            new_symtab[new_index] = symtab[i];
+        }
+    }
+
+    // Free the old symbol table and update the global variables
+    free(symtab);
+    symtab = new_symtab;
+    symtab_size = new_size;
+}
+
 /* lookup symbol */
 struct symbol *lookup(char* sym)
 {
-    struct symbol *sp = &symtab[symhash(sym)%NHASH];
-    int scount = NHASH; /* how many have we looked at */
+    if (symtab_size == 0) {
+        expand_symtab(); // Initialize the symbol table
+    }
+    else if (symtab_count >= symtab_size * 0.7) {
+        expand_symtab(); // Expand the symbol table if it's more than 70% full
+    }
+    unsigned int index = symhash(sym) % symtab_size;
+    struct symbol *sp = &symtab[index];
+    int scount = symtab_size; /* how many have we looked at */
     while(--scount >= 0) {
         if(sp->name && !strcmp(sp->name, sym)) { 
             return sp;  /* symbol found*/
@@ -34,9 +71,11 @@ struct symbol *lookup(char* sym)
             sp->type = 0;
             sp->func = NULL;
             sp->syms = NULL;
+
+            symtab_count++;
             return sp; /* new entry */
         }
-        if(++sp >= symtab+NHASH) sp = symtab; /* try the next entry */
+        if(++sp >= symtab+symtab_size) sp = symtab; /* try the next entry */
     }
     yyerror("symbol table overflow\n");
     abort(); /* tried them all, table is full */
@@ -426,5 +465,42 @@ void print_ast(struct ast *node, int depth, char *prefix) {
     } else {
         if (node->l) print_ast(node->l, depth + 1, new_prefix);
         if (node->r) print_ast(node->r, depth + 1, new_prefix);
+    }
+}
+
+int roman_to_int(const char *roman) {
+    int result = 0;
+    while (*roman) {
+        switch (*roman) {
+            case 'M': result += 1000; break;
+            case 'D': result += 500; break;
+            case 'C': 
+                if (*(roman + 1) == 'M' || *(roman + 1) == 'D') result -= 100;
+                else result += 100;
+                break;
+            case 'L': result += 50; break;
+            case 'X': 
+                if (*(roman + 1) == 'C' || *(roman + 1) == 'L') result -= 10;
+                else result += 10;
+                break;
+            case 'V': result += 5; break;
+            case 'I': 
+                if (*(roman + 1) == 'X' || *(roman + 1) == 'V') result -= 1;
+                else result += 1;
+                break;
+            default: return -1; // Invalid Roman numeral
+        }
+        roman++;
+    }
+    return result;
+}
+
+// Print the symble table
+void print_symtab() {
+    printf("Symbol Table Contents:\n");
+    for (size_t i = 0; i < symtab_size; i++) {
+        if (symtab[i].name != NULL) {
+            printf("Name: %s, Value: %.2f, Type: %d\n", symtab[i].name, symtab[i].value, symtab[i].type);
+        }
     }
 }

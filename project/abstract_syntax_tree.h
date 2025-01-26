@@ -70,5 +70,6 @@ double eval(struct ast *);
 void treefree(struct ast *);
 
 void print_ast(struct ast *node, int depth, char *prefix);
+int roman_to_int(const char *roman);
 
 
