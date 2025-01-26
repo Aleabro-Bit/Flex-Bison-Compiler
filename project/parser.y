@@ -87,9 +87,9 @@ declare: DATA_TYPE ID init {
 } //TODO: add declare
     ;
 init: ASSIGN value {
-    struct symbol *sym = lookup($2->s); // Cerca la variabile
+    struct symbol *sym = lookup($2->data.sym->name); // Cerca la variabile
     if (sym->type != 0 && sym->type != $2->nodetype) {
-        yyerror("Type mismatch: cannot assign value to variable '%s'", $2->s);
+        yyerror("Type mismatch: cannot assign value to variable '%s'", $2->data.sym->name);
     } else {
         $$ = newasgn(sym, $2);
     }

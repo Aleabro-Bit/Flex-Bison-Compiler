@@ -1601,9 +1601,9 @@ yyreduce:
   case 22: /* init: ASSIGN value  */
 #line 89 "parser.y"
                    {
-    struct symbol *sym = lookup((yyvsp[0].a)->s); // Cerca la variabile
+    struct symbol *sym = lookup((yyvsp[0].a)->data.sym->name); // Cerca la variabile
     if (sym->type != 0 && sym->type != (yyvsp[0].a)->nodetype) {
-        yyerror("Type mismatch: cannot assign value to variable '%s'", (yyvsp[0].a)->s);
+        yyerror("Type mismatch: cannot assign value to variable '%s'", (yyvsp[0].a)->data.sym->name);
     } else {
         (yyval.a) = newasgn(sym, (yyvsp[0].a));
     }
