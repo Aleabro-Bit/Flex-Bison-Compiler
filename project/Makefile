@@ -6,8 +6,9 @@ TARGET = compiler
 LEX_FILE = lexer.l
 YACC_FILE = parser.y
 AST_FILE = abstract_syntax_tree.c
+SYM_FILE = symbol_table.c
 
-OBJS = lex.yy.o parser.tab.o abstract_syntax_tree.o
+OBJS = lex.yy.o parser.tab.o abstract_syntax_tree.o symbol_table.o
 
 # Directory include
 INCLUDE_DIR = -I.
@@ -17,9 +18,12 @@ INCLUDE_DIR = -I.
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) -o $@ $^ -lfl -lm   # Link the math library
+	$(CC) -o $@ $^ -lfl -lm   
 
 abstract_syntax_tree.o: abstract_syntax_tree.c abstract_syntax_tree.h
+	$(CC) -c $(INCLUDE_DIR) $<
+
+symbol_table.o: symbol_table.c
 	$(CC) -c $(INCLUDE_DIR) $<
 
 lex.yy.o: lex.yy.c parser.tab.h abstract_syntax_tree.h

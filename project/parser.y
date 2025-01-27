@@ -10,11 +10,6 @@ extern FILE *yyin;
 extern int yylineno;
 
 int yylex();
-
-// Declare functions
-void print_token(int token);
-void add_variable(char *name, int value);
-int get_variable_value(char *name);
 %}
 
 %define parse.error verbose
@@ -36,7 +31,7 @@ int get_variable_value(char *name);
 %token <fn> FUNC DATA_TYPE
 %token <s> ID
 
-%type <a> expression statement statements whether when  shift condition explist  assignment return flow ufunction funcall START declare init value
+%type <a> expression statement statements whether when  shift condition explist  assignment return flow ufunction funcall START declare init value from
 %type <sl> symlist
 
 %nonassoc <fn> CMP
@@ -51,13 +46,15 @@ int get_variable_value(char *name);
 START: /* nothing */
     | statements {$$ = newast('L', $1, NULL); printf("= %4.4g\n", eval($1)); treefree($1); }
     | START statements EOL {$$ = newast('L', $1, $2); print_ast($2, 0, " ");  printf("= %4.4g\n>", eval($2)); treefree($2); }
+    | START ufunction EOL
+    | START error EOL { yyerrok; printf("> "); }
     | START EOL { printf("> "); }
     ;
-statements: ufunction { $$ = $1; }
-    | statements statement ';' { if ($2 == NULL) 
+statements: 
+    | statement ';' statements { if ($3 == NULL) 
         $$ = $1;
     else 
-        $$ = newast('L', $1, $2); 
+        $$ = newast('L', $1, $3); 
         } // expression or statement list
     | statement  { $$ = $1; }
     ;
@@ -67,13 +64,13 @@ statement:
     | funcall { $$ = $1; }
     | return { $$ = $1; }
     | flow  { $$ = $1; }
-    | ufunction { $$ = $1; }
+  
     | expression { $$ = $1; }
     ;
 flow: 
     | whether
     | when
-//    | from
+    | from
     | shift
     ;
 declare: DATA_TYPE ID init {
@@ -105,7 +102,7 @@ whether: WHETHER '(' condition ')' THEN ':' statements { $$ = newflow('I', $3, $
 when: WHEN condition UNTIL statements { $$ = newflow('W', $2, $4, NULL); } //TODO: change syntax
     ;
 
-//from: FROM expression TO expression ';' STEP expression '%' statements '%' { $$ = newflow('F', $2, $4, $6, $8); } //TODO: add for flow
+from: FROM expression TO expression ';' STEP expression '%' statements '%' { $$ = newfor($2,$4,$7,$9); } //TODO: add for flow
     ;
 shift: SHIFT '(' expression ')' '%' EVENT '(' condition ')' ASSIGN expression '%'
     ;
@@ -137,7 +134,7 @@ symlist: ID          { $$ = newsymlist($1, NULL); }
     ;
 return: RETURN expression ';' { $$ = newast('R', $2, NULL); } //TODO: add return
     ;
-ufunction: DEFINE DATA_TYPE ID '(' symlist ')' '{' statements '}' { dodef($3,$5,$8); }
+ufunction: DEFINE  ID '(' symlist ')' '{' statements '}' { dodef($2,$4,$7); printf("Function %s defined\n", $2->name); }
     ;
 funcall: ID '(' explist ')' { $$ = newcall($1, $3); }
     | FUNC '(' explist ')' { $$ = newfunc($1, $3); }
@@ -145,20 +142,20 @@ funcall: ID '(' explist ')' { $$ = newcall($1, $3); }
 
 %%
 
-int main(void) {
-    yyparse();
+int main(int argc, char **argv) {
+
+    if(argc < 2) { /* just read stdin */
+        yyparse();
+        return 0;
+    }
+    for(int i = 1; i < argc; i++) {
+        FILE *f = fopen(argv[i], "r");
+        if(!f) {
+            perror(argv[i]);
+            return (1);
+        }
+        yyparse();
+        fclose(f);
+    }
     return 0;
 }
-
-// Simple symbol table
-void add_variable(char *name, int value) {
-    // This is a simplified symbol table
-    printf("Adding variable: %s = %d\n", name, value);
-}
-
-int get_variable_value(char *name) {
-    // For simplicity, just return a dummy value
-    printf("Getting value of variable: %s\n", name);
-    return 42;
-}
-

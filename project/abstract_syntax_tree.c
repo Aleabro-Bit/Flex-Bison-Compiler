@@ -5,81 +5,7 @@
 # include <math.h>
 # include "abstract_syntax_tree.h"
 
-/* simple symtab of fixed size */
-/* Initial size*/
-#define NHASH 100
-struct symbol *symtab = NULL;
-size_t symtab_size = 0; // Current size
-size_t symtab_count = 0; // Number of symbols currently used
 
-/* symbol table */
-/* hash a symbol */
-static unsigned symhash(char *sym)
-{
-    unsigned int hash = 0;
-    unsigned c;
-    while(c = *sym++) hash = hash*9 ^ c;
-    return hash;
-}
-
-/* Expand the symbol table */
-void expand_symtab() {
-    size_t new_size = (symtab_size == 0) ? NHASH : symtab_size * 2;
-    struct symbol *new_symtab = calloc(new_size, sizeof(struct symbol));
-    if (!new_symtab) {
-        perror("ERROR: Unable to expand symbol table");
-        exit(EXIT_FAILURE);
-    }
-
-    // Reallocate the symbols
-    for (size_t i = 0; i < symtab_size; i++) {
-        if (symtab[i].name != NULL) {
-            unsigned int new_index = symhash(symtab[i].name) % new_size;
-            unsigned int probe = 1;
-            while (new_symtab[new_index].name != NULL) {
-                new_index = (new_index + probe * probe++) % new_size; // Quadratic probing
-            }
-            new_symtab[new_index] = symtab[i];
-        }
-    }
-
-    // Free the old symbol table and update the global variables
-    free(symtab);
-    symtab = new_symtab;
-    symtab_size = new_size;
-}
-
-/* lookup symbol */
-struct symbol *lookup(char* sym)
-{
-    if (symtab_size == 0) {
-        expand_symtab(); // Initialize the symbol table
-    }
-    else if (symtab_count >= symtab_size * 0.7) {
-        expand_symtab(); // Expand the symbol table if it's more than 70% full
-    }
-    unsigned int index = symhash(sym) % symtab_size;
-    struct symbol *sp = &symtab[index];
-    int scount = symtab_size; /* how many have we looked at */
-    while(--scount >= 0) {
-        if(sp->name && !strcmp(sp->name, sym)) { 
-            return sp;  /* symbol found*/
-        }
-        if(!sp->name) { /* new entry */
-            sp->name = strdup(sym);
-            sp->value = 0;
-            sp->type = 0;
-            sp->func = NULL;
-            sp->syms = NULL;
-
-            symtab_count++;
-            return sp; /* new entry */
-        }
-        if(++sp >= symtab+symtab_size) sp = symtab; /* try the next entry */
-    }
-    yyerror("symbol table overflow\n");
-    abort(); /* tried them all, table is full */
-}
 
 /* Build an AST */
 struct ast *newast(int nodetype, struct ast *l, struct ast *r) {
@@ -114,6 +40,7 @@ struct ast *newcmp(int cmptype, struct ast *l, struct ast *r)
     struct ast *a = newast('0' + cmptype, l, r); // '0' + cmptype represents comparison
     return a;
 }
+
 /* build a declaration node */
 struct ast *newdeclare(struct symbol *name, struct symlist *args, struct ast *body) {
     name->syms = args;
@@ -165,43 +92,45 @@ struct ast *newflow(int nodetype, struct ast *cond, struct ast *tl, struct ast *
     return a;
 }
 
+struct ast *newfor(struct ast *init, struct ast *cond, struct ast *inc, struct ast *body) {
+    struct ast *increment_with_body = malloc(sizeof(struct ast));
+    if (!increment_with_body) {
+        yyerror("out of space");
+        exit(1);
+    }
+    increment_with_body->nodetype = 'L'; // Lista di istruzioni
+    increment_with_body->l = body;      // Corpo del ciclo
+    increment_with_body->r = inc;       // Incremento
+
+    struct ast *fornode = malloc(sizeof(struct ast));
+    if (!fornode) {
+        yyerror("out of space");
+        exit(1);
+    }
+    fornode->nodetype = 'T';            // Nodo per il ciclo `for`
+    fornode->l = init;                  // Inizializzazione
+    fornode->data.flow.cond = cond;     // Condizione
+    fornode->r = increment_with_body;   // Corpo + Incremento
+    return fornode;
+}
+
 /* build a string AST node */
 struct ast *newstr(char *s) {
-    struct ast *a = malloc(sizeof(struct ast));
+struct ast *a = malloc(sizeof(struct ast));
     if (!a) {
         yyerror("out of space");
         exit(1);
     }
-    a->nodetype = 'S'; 
-    a->data.sym = (struct symbol*)strdup(s); // Store the string as symbol name
-    free(s); // Free the original string
+    a->nodetype = 'S'; // Identifica il nodo come stringa
+    a->data.s = strdup(s); // Duplica la stringa e la memorizza nel nodo
+    if (!a->data.s) {
+        yyerror("out of space for string");
+        exit(1);
+    }
     return a;
 }
 
-/* Create a symbol list */
-struct symlist *newsymlist(struct symbol *sym, struct symlist *next)
-{
- struct symlist *sl = (struct symlist*)malloc(sizeof(struct symlist));
 
- if(!sl) {
- yyerror("out of space");
- exit(1);
- }
- sl->sym = sym;
- sl->next = next;
- return sl;
-}
-
-/* free a list of symbols */
-void symlistfree(struct symlist *sl)
-{
-    struct symlist *nsl;
-    while(sl) {
-        nsl = sl->next;
-        free(sl);
-        sl = nsl;
-}
-}
 
 /* free a tree of ASTs */
 void treefree(struct ast *a)
@@ -214,14 +143,14 @@ void treefree(struct ast *a)
         case '*':
         case '/':
         case '^':
-        case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': 
+        case '1': case '2': case '3': case '4': case '5': case '6': 
         case 'L':
             treefree(a->r);
         /* one subtree */
         case '|': case 'M': case 'C': case 'F':
             treefree(a->l);
         /* no subtree */
-        case 'K': case 'N': 
+        case 'K': case 'N': case 'D':
             break;
         case 'S': 
             if (a->data.sym) free(a->data.sym); 
@@ -261,8 +190,8 @@ double eval(struct ast *a)
             break;
         /* string */
         case 'S': 
-                printf("String: %s\n", a->data.sym->name);
-                return 0.0;
+            printf("String: %s\n", a->data.s);
+            return 0.0;
         /* name reference */
         case 'N': 
             v = a->data.sym->value; 
@@ -279,8 +208,10 @@ double eval(struct ast *a)
                 }
 
             // Assign value
+            sym->value = val;
             v = sym->value; 
             break;
+        
         /* expressions */
         case '+': v = eval(a->l) + eval(a->r); break;
         case '-': v = eval(a->l) - eval(a->r); break;
@@ -315,6 +246,17 @@ double eval(struct ast *a)
         }
         break; /* value of last statement is value of while/do */
 
+        /* for loop */
+        case 'T': 
+            // Node `l` -> init statement
+            eval(a->l);
+            // Cycle based on `flow.cond` and `r`
+            while (eval(a->data.flow.cond) != 0) {
+                // Node `r` -> body of the loop (including the increment)
+                eval(a->r);
+            }
+            break;
+        
         /* list of statements */
         case 'L': eval(a->l); v = eval(a->r); break;
         case 'F': v = callbuiltin(a); break;
@@ -439,8 +381,11 @@ void print_ast(struct ast *node, int depth, char *prefix) {
         case '=': printf(", Assignment to: %s\n", node->data.sym->name); break;
         case 'F': printf(", Built-in Function: %d\n", node->data.functype); break;
         case 'C': printf(", User Function: %s\n", node->data.sym->name); break;
+        case 'S': printf(", String: %s\n", node->data.sym->name); break;
         case 'I': printf(" (If/Else)\n"); break;
         case 'W': printf(" (While Loop)\n"); break;
+        case 'T': printf(" (For Loop)\n"); break;
+
         default: printf("\n"); break;
     }
 
@@ -495,12 +440,3 @@ int roman_to_int(const char *roman) {
     return result;
 }
 
-// Print the symble table
-void print_symtab() {
-    printf("Symbol Table Contents:\n");
-    for (size_t i = 0; i < symtab_size; i++) {
-        if (symtab[i].name != NULL) {
-            printf("Name: %s, Value: %.2f, Type: %d\n", symtab[i].name, symtab[i].value, symtab[i].type);
-        }
-    }
-}

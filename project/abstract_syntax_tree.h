@@ -34,7 +34,8 @@ struct ast {
     int nodetype;          // Kind of node (es. 'F', 'V', 'N', etc.)
     struct ast *l;         /* left child */
     struct ast *r;         /* right child */
-    union {                // Campi opzionali
+    union {                
+        char *s;           /* string value for string nodes */
         double number;     /* Value for constant nodes */
         struct symbol *sym; // Riferimento al simbolo (per variabili o funzioni)
         enum bifs functype; /* built-in functions */
@@ -62,6 +63,7 @@ struct ast *newasgn(struct symbol *s, struct ast *v);
 struct ast *newnum(double d);
 struct ast *newstr (char *s);
 struct ast *newflow(int nodetype, struct ast *cond, struct ast *tl, struct ast *tr);
+struct ast *newfor(struct ast *init, struct ast *cond, struct ast *inc, struct ast *body);
 /* define a function */
 void dodef(struct symbol *name, struct symlist *syms, struct ast *stmts);
 /* evaluate an AST */
