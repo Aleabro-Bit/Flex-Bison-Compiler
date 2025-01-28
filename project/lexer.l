@@ -32,19 +32,14 @@ ROM M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*)
 "until"         { return UNTIL; } // While keyword
 "from"          { return FROM; } // For keyword
 "to"            { return TO; }
-"shift"         { return SHIFT; } //Switch keyword
-"event"         { return EVENT; } //Case keyword
 
 "num"   { yylval.fn = 1; return DATA_TYPE; }
 "str"   { yylval.fn = 2; return DATA_TYPE; }
 "bool"  { yylval.fn = 3; return DATA_TYPE; }
 "list"  { yylval.fn = 4; return DATA_TYPE; }
 "void"  { yylval.fn = 5; return DATA_TYPE; }
-"const" {yylval.fn = 6; return DATA_TYPE; }
-"enum"  {yylval.fn = 7; return DATA_TYPE; }
-"extern" {yylval.fn = 8; return DATA_TYPE; }
-"roman" {yylval.fn = 9; return DATA_TYPE; }
-"binary" {yylval.fn = 10; return DATA_TYPE; }
+"roman" {yylval.fn = 6; return DATA_TYPE; }
+"binary" {yylval.fn = 7; return DATA_TYPE; }
 
 "+"     return(PLUS);
 "-"     return(MINUS);
@@ -71,6 +66,11 @@ ROM M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*)
 "exp"   { yylval.fn = B_exp; return FUNC;}
 "log"   { yylval.fn = B_log; return FUNC;}
 "print" { yylval.fn = B_print; return FUNC;}
+"fact"  { yylval.fn = B_fact; return FUNC;}
+"sin"   { yylval.fn = B_sin; return FUNC;}
+"cos"   { yylval.fn = B_cos; return FUNC;}
+"tan"   { yylval.fn = B_tan; return FUNC;}
+
 
 [,:{}=()~;]	{ yylval.st = strdup(yytext); return *yytext;}
 
@@ -79,8 +79,9 @@ ROM M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*)
 {ROM}       { yylval.num = roman_to_int(yytext); return ROMAN; }
 
 "<<" {BEGIN(STRING);}
-<STRING>"\\k"	{ add_string('\n'); }
-<STRING>">>"	{ BEGIN(INITIAL); yylval.st = get_string_buffer(); return STR; }
+<STRING>"#k"	{ add_string('\n'); }
+<STRING>">>"	{ BEGIN(INITIAL); yylval.st = get_string_buffer();  return STR; }
+<STRING>"#j"	{ add_string('\t'); }
 <STRING>"\"\""	{ add_string('"'); }
 <STRING>.	{ add_string(*yytext); }
 

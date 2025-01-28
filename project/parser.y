@@ -4,7 +4,8 @@
 #include <string.h>
 #include <math.h>
 #include "abstract_syntax_tree.h"
-
+/*TODO: fix FOR, STRINGS, DATA ASSIGN, IMPLEMENT LISTS, 
+IMPLEMENT SOME BUILT IN FUNCTIONS, RETURN, SISTEMARE IL PARSER */
 int yydebug = 0;
 extern FILE *yyin;
 extern int yylineno;
@@ -24,14 +25,14 @@ int yylex();
     int fn;          // which function
 }
 
-%token STEP TO FROM WHEN OTHERWISE WHETHER RETURN DEFINE UNTIL SHIFT EVENT EOL THEN BOOLEAN
+%token STEP TO FROM WHEN OTHERWISE WHETHER RETURN DEFINE UNTIL EOL THEN BOOLEAN
 %token <op> PLUS MINUS MUL DIV POW ASSIGN ABS
 %token <num> NUM BINARY ROMAN
 %token <st> STR   
 %token <fn> FUNC DATA_TYPE
 %token <s> ID
 
-%type <a> expression statement statements whether when  shift condition explist  assignment return flow ufunction funcall START declare init value from
+%type <a> expression statement statements whether when  condition explist  assignment return flow ufunction funcall START declare init value from
 %type <sl> symlist
 
 %nonassoc <fn> CMP
@@ -44,14 +45,13 @@ int yylex();
 %%
 
 START: /* nothing */
-    | statements {$$ = newast('L', $1, NULL); printf("= %4.4g\n", eval($1)); treefree($1); }
     | START statements EOL {$$ = newast('L', $1, $2); print_ast($2, 0, " ");  printf("= %4.4g\n>", eval($2)); treefree($2); }
     | START ufunction EOL
     | START error EOL { yyerrok; printf("> "); }
     | START EOL { printf("> "); }
     ;
 statements: 
-    | statement ';' statements { if ($3 == NULL) 
+     statement ';' statements { if ($3 == NULL) 
         $$ = $1;
     else 
         $$ = newast('L', $1, $3); 
@@ -59,7 +59,7 @@ statements:
     | statement  { $$ = $1; }
     ;
 statement:
-    | declare { $$ = $1; }
+     declare { $$ = $1; }
     | assignment { $$ = $1; } 
     | funcall { $$ = $1; }
     | return { $$ = $1; }
@@ -68,31 +68,25 @@ statement:
     | expression { $$ = $1; }
     ;
 flow: 
-    | whether
+     whether
     | when
     | from
-    | shift
     ;
 declare: DATA_TYPE ID init {
-    struct symbol *sym = lookup($2->name);
-    if (sym->type != 0) {
-        yyerror("Variable '%s' already declared", $2->name);
-    } else {
-        sym->type = $1; // Assegna il tipo dalla regola DATA_TYPE
-    }
-    $$ = newdeclare(sym, NULL, $3);
+     struct symbol *sym = lookup($2->name);
+     if (sym->type != 0) {
+         yyerror("Variable '%s' already declared", $2->name);
+     } else {
+         sym->type = $1; // Assegna il tipo dalla regola DATA_TYPE
+     }
+     struct ast *declare = newdeclare(sym, NULL, NULL);
+     struct ast *assign = newasgn(sym, $3);
+     $$ = newast('L', declare, assign);
 } //TODO: add declare
     ;
-init: ASSIGN value {
-    struct symbol *sym = lookup($2->data.sym->name); // Cerca la variabile
-    if (sym->type != 0 && sym->type != $2->nodetype) {
-        yyerror("Type mismatch: cannot assign value to variable '%s'", $2->data.sym->name);
-    } else {
-        $$ = newasgn(sym, $2);
-    }
-}
- | { $$ = NULL; }
-  ;
+init: ASSIGN expression { $$ = $2; }
+    | { $$ = NULL; }
+    ;
 assignment: ID ASSIGN expression { $$ = newasgn($1, $3); }
     ;
 whether: WHETHER '(' condition ')' THEN ':' statements { $$ = newflow('I', $3, $7, NULL); } //TODO: change syntax
@@ -103,8 +97,6 @@ when: WHEN condition UNTIL statements { $$ = newflow('W', $2, $4, NULL); } //TOD
     ;
 
 from: FROM expression TO expression ';' STEP expression '%' statements '%' { $$ = newfor($2,$4,$7,$9); } //TODO: add for flow
-    ;
-shift: SHIFT '(' expression ')' '%' EVENT '(' condition ')' ASSIGN expression '%'
     ;
 condition: expression CMP expression { $$ = newcmp($2, $1, $3); }
     | expression {}    
@@ -118,9 +110,10 @@ expression: expression PLUS expression { $$ = newast('+', $1, $3); }
     | MINUS expression %prec UMINUS{ $$ = newast('M', $2, NULL); }
     | '(' expression ')' { $$ = $2; }
     | value { $$ = $1; }
+    | funcall { $$ = $1; }
     ;
 value: 
-    | NUM { $$ = newnum($1);}
+     NUM { $$ = newnum($1);}
     | BINARY { $$ = newnum($1); }
     | ROMAN { $$ = newnum($1); }
     | ID { $$ = newref($1); }

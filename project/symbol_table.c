@@ -17,7 +17,7 @@ static unsigned symhash(char *sym)
 {
     unsigned int hash = 0;
     unsigned c;
-    while(c = *sym++) hash = hash*9 ^ c;
+    while(c = *sym++) { hash = hash*9 ^ c; }
     return hash;
 }
 
@@ -36,7 +36,8 @@ void expand_symtab() {
             unsigned int new_index = symhash(symtab[i].name) % new_size;
             unsigned int probe = 1;
             while (new_symtab[new_index].name != NULL) {
-                new_index = (new_index + probe * probe++) % new_size; // Quadratic probing
+                new_index = (new_index + probe * (probe)) % new_size; // Quadratic probing
+                probe++;
             }
             new_symtab[new_index] = symtab[i];
         }

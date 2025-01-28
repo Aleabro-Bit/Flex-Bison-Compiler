@@ -6,7 +6,6 @@
 # include "abstract_syntax_tree.h"
 
 
-
 /* Build an AST */
 struct ast *newast(int nodetype, struct ast *l, struct ast *r) {
     struct ast *a = (struct ast *)malloc(sizeof(struct ast));
@@ -98,19 +97,19 @@ struct ast *newfor(struct ast *init, struct ast *cond, struct ast *inc, struct a
         yyerror("out of space");
         exit(1);
     }
-    increment_with_body->nodetype = 'L'; // Lista di istruzioni
-    increment_with_body->l = body;      // Corpo del ciclo
-    increment_with_body->r = inc;       // Incremento
+    increment_with_body->nodetype = 'L'; // Instruction list
+    increment_with_body->l = body;      // Body of the cycle
+    increment_with_body->r = inc;       // Increment
 
     struct ast *fornode = malloc(sizeof(struct ast));
     if (!fornode) {
         yyerror("out of space");
         exit(1);
     }
-    fornode->nodetype = 'T';            // Nodo per il ciclo `for`
-    fornode->l = init;                  // Inizializzazione
-    fornode->data.flow.cond = cond;     // Condizione
-    fornode->r = increment_with_body;   // Corpo + Incremento
+    fornode->nodetype = 'T';            // Node T for "for loop"
+    fornode->l = init;                  // Init statement
+    fornode->data.flow.cond = cond;     // Condition
+    fornode->r = increment_with_body;   // Body + increment
     return fornode;
 }
 
@@ -121,16 +120,15 @@ struct ast *a = malloc(sizeof(struct ast));
         yyerror("out of space");
         exit(1);
     }
-    a->nodetype = 'S'; // Identifica il nodo come stringa
-    a->data.s = strdup(s); // Duplica la stringa e la memorizza nel nodo
+    a->nodetype = 'S'; // String node
+    a->data.s = strdup(s); // Save the string in the node
+    free(s); 
     if (!a->data.s) {
         yyerror("out of space for string");
         exit(1);
     }
     return a;
 }
-
-
 
 /* free a tree of ASTs */
 void treefree(struct ast *a)
@@ -173,10 +171,11 @@ void treefree(struct ast *a)
 
 static double callbuiltin(struct ast *);
 static double calluser(struct ast *);
+static double factorial(double n);
 
 double eval(struct ast *a)
 {
-    double v;
+    double v = 0;
 
     if(!a) {
     yyerror("internal error, null eval");
@@ -266,6 +265,7 @@ double eval(struct ast *a)
     return v;
 }
 
+/* built-in functions */
 static double callbuiltin(struct ast *a)
 {
     enum bifs functype = a->data.functype;
@@ -280,7 +280,14 @@ static double callbuiltin(struct ast *a)
             return log(v);
         case B_print:
             printf("= %4.4g\n", v);
-        return v;
+        case B_fact:
+            return factorial(v);
+        case B_sin:
+            return sin(v);
+        case B_cos:
+            return cos(v);
+        case B_tan:
+            return tan(v);
         default:
             yyerror("Unknown built-in function %d", functype);
             return 0.0;
@@ -302,7 +309,7 @@ static double calluser(struct ast *a)
     struct symlist *sl; /* dummy arguments */
     struct ast *args = a->l; /* actual arguments */
     double *oldval, *newval; /* saved arg values */
-    double v;
+    double v = 0.0;
     int nargs, i;
     if(!fn->func) {
     yyerror("call to undefined function", fn->name);
@@ -367,21 +374,21 @@ void yyerror(const char *s, ...) {
     va_end(ap);
 }
 
-// Funzione ricorsiva per stampare l'AST
+/* recursive function to print the abstract syntax tree */
 void print_ast(struct ast *node, int depth, char *prefix) {
     if (!node) return;
 
-    // Stampa prefisso e tipo di nodo
+    // Print node prefix
     printf("%s%sNode type: '%c'", prefix, (depth == 0) ? "Root -> " : "|__ ", node->nodetype);
 
-    // Aggiungi dettagli in base al tipo di nodo
+    // Add details based on the node type
     switch (node->nodetype) {
         case 'K': printf(", Value: %f\n", node->data.number); break;
         case 'N': printf(", Variable: %s, Value: %f\n", node->data.sym->name, node->data.sym->value); break;
         case '=': printf(", Assignment to: %s\n", node->data.sym->name); break;
         case 'F': printf(", Built-in Function: %d\n", node->data.functype); break;
         case 'C': printf(", User Function: %s\n", node->data.sym->name); break;
-        case 'S': printf(", String: %s\n", node->data.sym->name); break;
+        case 'S': printf(", String: %s\n", node->data.s); break;
         case 'I': printf(" (If/Else)\n"); break;
         case 'W': printf(" (While Loop)\n"); break;
         case 'T': printf(" (For Loop)\n"); break;
@@ -389,11 +396,11 @@ void print_ast(struct ast *node, int depth, char *prefix) {
         default: printf("\n"); break;
     }
 
-    // Costruisci il nuovo prefisso
+    // Create a new prefix for children
     char new_prefix[256];
     snprintf(new_prefix, sizeof(new_prefix), "%s%s", prefix, (depth == 0) ? "" : "    ");
 
-    // Gestione figli e flussi di controllo
+    // Handle control flow nodes and children nodes
     if (node->nodetype == 'I' || node->nodetype == 'W') {
         if (node->data.flow.cond) {
             printf("%s|__ Condition:\n", new_prefix);
@@ -439,4 +446,15 @@ int roman_to_int(const char *roman) {
     }
     return result;
 }
+
+static double factorial(double n) {
+    if (n < 0) return NAN; // Undefined for negative numbers
+    if (n == 0 || n == 1) return 1;
+    double result = 1;
+    for (int i = 2; i <= (int)n; i++) {
+        result *= i;
+    }
+    return result;
+}
+
 

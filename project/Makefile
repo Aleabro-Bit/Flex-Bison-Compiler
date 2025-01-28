@@ -1,6 +1,7 @@
 CC = gcc
 FLEX = flex
 BISON = bison
+CFLAGS = -O2 -ggdb -Wall
 
 TARGET = compiler
 LEX_FILE = lexer.l

@@ -5,6 +5,20 @@
 extern int yylineno; /* from lexer */
 void yyerror(const char *s, ...);
 
+struct list {
+    double value;         // Valore della lista
+    struct list *next;    // Puntatore al prossimo elemento della lista
+};
+
+typedef struct value {
+    int type;               // Type of value: 0 = number, 1 = string, 2 = list
+    union {
+        double number;       
+        char *string;        
+        struct list *list;   // For lists
+    } data;
+}val_t;
+
 /* symbol table */
 struct symbol { /* a variable name */
  char *name;
@@ -12,6 +26,7 @@ struct symbol { /* a variable name */
  struct ast *func; /* stmt for the function */
  struct symlist *syms; /* list of dummy args */
  int type;
+ struct list *list_value;
 };
 
 struct symbol *lookup(char*);
@@ -23,10 +38,15 @@ struct symlist {
 };
 
 enum bifs { /* built-in functions */
- B_sqrt = 1,
- B_exp,
- B_log,
- B_print
+    B_sqrt = 1,
+    B_exp,
+    B_log,
+    B_print,
+    B_fact,
+    B_sin,
+    B_cos,
+    B_tan,
+    
 };
 
 /* Nodes in the abstract syntax tree */
@@ -73,5 +93,6 @@ void treefree(struct ast *);
 
 void print_ast(struct ast *node, int depth, char *prefix);
 int roman_to_int(const char *roman);
+
 
 
