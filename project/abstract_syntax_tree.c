@@ -195,21 +195,65 @@ double eval(struct ast *a)
         case 'N': 
             v = a->data.sym->value; 
             break;
-        /* assignment */
-        case '=': 
-            struct symbol *sym = a->data.sym;
-            double val = eval(a->l);
-
-            if ((sym->type == 1 && a->l->nodetype != 'K') || // Numeric type mismatch
-                    (sym->type == 2 && a->l->nodetype != 'S')) { // String type mismatch
-                    yyerror("Type mismatch for variable '%s'", sym->name);
-                    return 0.0;
-                }
-
-            // Assign value
-            sym->value = val;
-            v = sym->value; 
+        /* declaration */
+        case 'D':
+            //TODO: Implement the declaration
+            v = 0;
             break;
+        /* assignment */
+case '=': 
+    {
+        struct symbol *sym = a->data.sym; // Symbol being assigned
+
+        if (a->l == NULL) {
+            // Variable declaration without initialization
+            if (sym->type == 1) { 
+                sym->value = 0.0; // Default value for numeric type
+            } else if (sym->type == 2) {
+                sym->value = 0.0; // Default "dummy" value for strings (or handle differently)
+                sym->name = "";   // Or set to a valid default string value
+            } 
+            // Add handling for other types if needed
+            v = sym->value;
+            break;
+        }
+        
+        double val = eval(a->l);         // Evaluate the expression on the left-hand side
+
+        // Handle assignment from another variable
+        if (a->l->nodetype == 'N') { 
+            struct symbol *source_sym = a->l->data.sym;
+            // Check if types of source and destination symbols match
+            if (source_sym->type != sym->type) {
+                yyerror("Type mismatch between variable '%s' and '%s'", sym->name, source_sym->name);
+                return 0.0;
+            }
+        } 
+        // Handle numeric assignment (constant, variable, or expression)
+        else if (sym->type == 1) { 
+            if (a->l->nodetype != 'K' && a->l->nodetype != 'N' &&
+                a->l->nodetype != '+' && a->l->nodetype != '-' &&
+                a->l->nodetype != '*' && a->l->nodetype != '/' &&
+                a->l->nodetype != '^' && a->l->nodetype != 'M') {
+                yyerror("Invalid numeric assignment to variable '%s'", sym->name);
+                return 0.0;
+            }
+        }
+        // Handle string assignment
+        else if (sym->type == 2) {
+            if (a->l->nodetype != 'S' && a->l->nodetype != 'N') {
+                yyerror("Invalid string assignment to variable '%s'", sym->name);
+                return 0.0;
+            }
+        }
+        // TODO: add additional types if needed
+
+        // Assign value
+        sym->value = val; 
+        v = sym->value; 
+    }
+    break;
+
         
         /* expressions */
         case '+': v = eval(a->l) + eval(a->r); break;
@@ -257,7 +301,10 @@ double eval(struct ast *a)
             break;
         
         /* list of statements */
-        case 'L': eval(a->l); v = eval(a->r); break;
+        case 'L': 
+        if (a->l) eval(a->l);
+        if (a->r) v = eval(a->r);
+        break;
         case 'F': v = callbuiltin(a); break;
         case 'C': v = calluser(a); break;
         default: printf("internal error: bad node %c\n", a->nodetype);
