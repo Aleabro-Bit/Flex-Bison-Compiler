@@ -18,7 +18,7 @@ int roman_to_int(const char *roman);
 ID [a-zA-Z][a-zA-Z0-9_]*
 DEC [0-9]+(\.[0-9]+)?
 BIN 0[bB][01]+ 
-ROM M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*)
+ROM 0(M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*))
 %x STRING COMMENT
 
 %%
@@ -50,9 +50,9 @@ ROM M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*)
 "!>"    return(STEP);
 "|"     return(ABS);
 
-"and" |
-"or"  |
-"not" 
+"and" return(AND);
+"or"  return(OR);  
+"not" return(NOT); 
 
 
 ">"     { yylval.fn = 1; return CMP;}

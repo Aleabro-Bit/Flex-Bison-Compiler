@@ -6,8 +6,8 @@ extern int yylineno; /* from lexer */
 void yyerror(const char *s, ...);
 
 struct list {
-    double value;         // Valore della lista
-    struct list *next;    // Puntatore al prossimo elemento della lista
+    double value;         // List value
+    struct list *next;    // Pointer to next element
 };
 
 typedef struct value {
@@ -87,12 +87,13 @@ struct ast *newfor(struct ast *init, struct ast *cond, struct ast *inc, struct a
 /* define a function */
 void dodef(struct symbol *name, struct symlist *syms, struct ast *stmts);
 /* evaluate an AST */
-double eval(struct ast *);
+val_t eval(struct ast *);
 /* delete and free an AST */
 void treefree(struct ast *);
 
 void print_ast(struct ast *node, int depth, char *prefix);
 int roman_to_int(const char *roman);
+void print_val(val_t val);
 
 
 

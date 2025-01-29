@@ -66,22 +66,25 @@ extern int yydebug;
     EOL = 267,                     /* EOL  */
     THEN = 268,                    /* THEN  */
     BOOLEAN = 269,                 /* BOOLEAN  */
-    PLUS = 270,                    /* PLUS  */
-    MINUS = 271,                   /* MINUS  */
-    MUL = 272,                     /* MUL  */
-    DIV = 273,                     /* DIV  */
-    POW = 274,                     /* POW  */
-    ASSIGN = 275,                  /* ASSIGN  */
-    ABS = 276,                     /* ABS  */
-    NUM = 277,                     /* NUM  */
-    BINARY = 278,                  /* BINARY  */
-    ROMAN = 279,                   /* ROMAN  */
-    STR = 280,                     /* STR  */
-    FUNC = 281,                    /* FUNC  */
-    DATA_TYPE = 282,               /* DATA_TYPE  */
-    ID = 283,                      /* ID  */
-    CMP = 284,                     /* CMP  */
-    UMINUS = 285                   /* UMINUS  */
+    AND = 270,                     /* AND  */
+    OR = 271,                      /* OR  */
+    NOT = 272,                     /* NOT  */
+    PLUS = 273,                    /* PLUS  */
+    MINUS = 274,                   /* MINUS  */
+    MUL = 275,                     /* MUL  */
+    DIV = 276,                     /* DIV  */
+    POW = 277,                     /* POW  */
+    ASSIGN = 278,                  /* ASSIGN  */
+    ABS = 279,                     /* ABS  */
+    NUM = 280,                     /* NUM  */
+    BINARY = 281,                  /* BINARY  */
+    ROMAN = 282,                   /* ROMAN  */
+    STR = 283,                     /* STR  */
+    FUNC = 284,                    /* FUNC  */
+    DATA_TYPE = 285,               /* DATA_TYPE  */
+    ID = 286,                      /* ID  */
+    CMP = 287,                     /* CMP  */
+    UMINUS = 288                   /* UMINUS  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -90,7 +93,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 18 "parser.y"
+#line 21 "parser.y"
 
     double num;
     char *st;
@@ -100,7 +103,7 @@ union YYSTYPE
     struct symlist *sl; // symbol list
     int fn;          // which function
 
-#line 104 "parser.tab.h"
+#line 107 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

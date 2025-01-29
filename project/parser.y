@@ -10,6 +10,9 @@ int yydebug = 0;
 extern FILE *yyin;
 extern int yylineno;
 
+void print_val(val_t val);
+
+
 int yylex();
 %}
 
@@ -25,7 +28,7 @@ int yylex();
     int fn;          // which function
 }
 
-%token STEP TO FROM WHEN OTHERWISE WHETHER RETURN DEFINE UNTIL EOL THEN BOOLEAN
+%token STEP TO FROM WHEN OTHERWISE WHETHER RETURN DEFINE UNTIL EOL THEN BOOLEAN AND OR NOT
 %token <op> PLUS MINUS MUL DIV POW ASSIGN ABS
 %token <num> NUM BINARY ROMAN
 %token <st> STR   
@@ -45,7 +48,7 @@ int yylex();
 %%
 
 START: /* nothing */
-    | START statements EOL {$$ = newast('L', $1, $2); print_ast($2, 0, " ");  printf("= %4.4g\n>", eval($2)); treefree($2); }
+    | START statements EOL {$$ = newast('L', $1, $2); val_t result = eval($2); print_ast($2, 0, " ");  print_val(result); treefree($2); }
     | START ufunction EOL
     | START error EOL { yyerrok; printf("> "); }
     | START EOL { printf("> "); }
@@ -89,16 +92,23 @@ init: ASSIGN expression { $$ = $2; }
     ;
 assignment: ID ASSIGN expression { $$ = newasgn($1, $3); }
     ;
-whether: WHETHER '(' condition ')' THEN ':' statements { $$ = newflow('I', $3, $7, NULL); } //TODO: change syntax
-    | WHETHER '(' condition ')' THEN ':' statements OTHERWISE ':' statements { $$ = newflow('I', $3, $7, $10); } 
+whether: WHETHER '[' condition ']' THEN ':' statements { $$ = newflow('I', $3, $7, NULL); } //TODO: change syntax
+    | WHETHER '[' condition ']' THEN ':' statements OTHERWISE ':' statements { $$ = newflow('I', $3, $7, $10); } 
     ;
 
-when: WHEN condition UNTIL statements { $$ = newflow('W', $2, $4, NULL); } //TODO: change syntax
+when: WHEN '[' condition ']' UNTIL statements { $$ = newflow('W', $3, $6, NULL); } //TODO: change syntax
     ;
 
-from: FROM expression TO expression ';' STEP expression '%' statements '%' { $$ = newfor($2,$4,$7,$9); } //TODO: add for flow
+from: FROM declare TO expression STEP expression '{' statements '}'
+    {
+        $$ = newfor($2, $4, $6, $8); // Inizializzazione, condizione, step, corpo
+    } //TODO: add for flow
     ;
 condition: expression CMP expression { $$ = newcmp($2, $1, $3); }
+    | condition AND condition { $$ = newast('&', $1, $3); }
+    | condition OR condition { $$ = newast('O', $1, $3); }
+    | NOT condition { $$ = newast('!', $2, NULL); }
+    | '(' condition ')' { $$ = $2; } 
     | expression {}    
     ;
 expression: expression PLUS expression { $$ = newast('+', $1, $3); }
@@ -113,7 +123,7 @@ expression: expression PLUS expression { $$ = newast('+', $1, $3); }
     | funcall { $$ = $1; }
     ;
 value: 
-     NUM { $$ = newnum($1);}
+    NUM { $$ = newnum($1);}
     | BINARY { $$ = newnum($1); }
     | ROMAN { $$ = newnum($1); }
     | ID { $$ = newref($1); }
