@@ -4,8 +4,8 @@
 #include <string.h>
 #include <math.h>
 #include "abstract_syntax_tree.h"
-/*TODO: fix FOR, STRINGS, DATA ASSIGN, IMPLEMENT LISTS, 
-IMPLEMENT SOME BUILT IN FUNCTIONS, RETURN, SISTEMARE IL PARSER */
+/*TODO: fix STRINGS and DATA ASSIGN, IMPLEMENT LISTS, 
+IMPLEMENT SOME BUILT IN FUNCTIONS, RETURN, SCOPE SISTEMARE IL PARSER */
 int yydebug = 0;
 extern FILE *yyin;
 extern int yylineno;
@@ -59,7 +59,7 @@ statements:
     else 
         $$ = newast('L', $1, $3); 
         } // expression or statement list
-    | statement  { $$ = $1; }
+    | statement ';' { $$ = $1; }
     ;
 statement:
      declare { $$ = $1; }
@@ -96,14 +96,19 @@ whether: WHETHER '[' condition ']' THEN ':' statements { $$ = newflow('I', $3, $
     | WHETHER '[' condition ']' THEN ':' statements OTHERWISE ':' statements { $$ = newflow('I', $3, $7, $10); } 
     ;
 
-when: WHEN '[' condition ']' UNTIL statements { $$ = newflow('W', $3, $6, NULL); } //TODO: change syntax
+when: WHEN '[' condition ']'  '{' statements '}' { $$ = newflow('W', $3, $6, NULL); } //TODO: change syntax
+    | WHEN '{' statements '}' UNTIL '[' condition ']' { $$ = newflow('W', $7, $3, NULL); }
     ;
 
-from: FROM declare TO expression STEP expression '{' statements '}'
-    {
-        $$ = newfor($2, $4, $6, $8); // Inizializzazione, condizione, step, corpo
-    } //TODO: add for flow
-    ;
+/* from works only if you declare the variable in the from statement */
+from: FROM '[' declare TO expression STEP expression ']' '{' statements '}'
+     {
+         struct ast *add = newast('+', newref($3->l->data.sym), $7);
+         struct ast *ass = newasgn($3->l->data.sym, add);
+         struct ast *cmp = newast('6', newref($3->l->data.sym), $5);
+         $$ = newfor($3, cmp, ass, $10);
+     } 
+     ;
 condition: expression CMP expression { $$ = newcmp($2, $1, $3); }
     | condition AND condition { $$ = newast('&', $1, $3); }
     | condition OR condition { $$ = newast('O', $1, $3); }
