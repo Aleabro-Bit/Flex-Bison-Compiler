@@ -33,13 +33,13 @@ ROM 0(M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*))
 "from"          { return FROM; } // For keyword
 "to"            { return TO; }
 
-"num"   { yylval.fn = 1; return DATA_TYPE; }
-"str"   { yylval.fn = 2; return DATA_TYPE; }
-"bool"  { yylval.fn = 3; return DATA_TYPE; }
-"list"  { yylval.fn = 4; return DATA_TYPE; }
-"void"  { yylval.fn = 5; return DATA_TYPE; }
-"roman" {yylval.fn = 6; return DATA_TYPE; }
-"binary" {yylval.fn = 7; return DATA_TYPE; }
+"num"   { yylval.dt = 1; return DATA_TYPE; }
+"str"   { yylval.dt = 2; return DATA_TYPE; }
+"bool"  { yylval.dt = 3; return DATA_TYPE; }
+"list"  { yylval.dt = 4; return DATA_TYPE; }
+"void"  { yylval.dt = 5; return DATA_TYPE; }
+"roman" {yylval.dt = 6; return DATA_TYPE; }
+"binary" {yylval.dt = 7; return DATA_TYPE; }
 
 "+"     return(PLUS);
 "-"     return(MINUS);

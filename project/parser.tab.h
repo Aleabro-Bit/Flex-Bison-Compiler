@@ -102,8 +102,9 @@ union YYSTYPE
     struct symbol *s; // which symbol
     struct symlist *sl; // symbol list
     int fn;          // which function
+    int dt;          // which data type
 
-#line 107 "parser.tab.h"
+#line 108 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

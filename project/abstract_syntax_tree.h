@@ -6,7 +6,10 @@ extern int yylineno; /* from lexer */
 void yyerror(const char *s, ...);
 
 struct list {
-    double value;         // List value
+    union {
+        double value;     // Value of the list element
+        char *string;     // String value
+    } data;
     struct list *next;    // Pointer to next element
 };
 
@@ -64,6 +67,7 @@ struct ast {
             struct ast *tl;   /* then branch or do list */
             struct ast *el;   /* optional else branch */
         } flow;
+    
     } data;
 };
 

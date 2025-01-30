@@ -174,7 +174,7 @@ void treefree(struct ast *a)
             treefree(a->l);
             break;
         /* up to three subtrees */
-        case 'I': case 'W':
+        case 'I': case 'W': case 'T':
             treefree(a->data.flow.cond);
             if (a->data.flow.tl) treefree(a->data.flow.tl);
             if (a->data.flow.el) treefree(a->data.flow.el);
@@ -194,8 +194,9 @@ void print_func(struct ast *arg);
 val_t eval(struct ast *a)
 {
     val_t v;
-    v.type = 0; // Default type is number
+    v.type = 1; // Default type is number
     v.data.number = 0.0; // Default value is 0.0
+    v.data.string = ""; // Default string value is empty
 
     if(!a) {
     yyerror("internal error, null eval");
@@ -205,29 +206,29 @@ val_t eval(struct ast *a)
     switch(a->nodetype) {
         /* constant */
         case 'K': 
-            v.type = 0; // Number
+            v.type = 1; // Number
             v.data.number = a->data.number; 
             break;
         /* string */
         case 'S': 
-            v.type = 1; // String
+            v.type = 2; // String
             v.data.string = strdup(a->data.s);
             break;
         /* name reference */
         case 'N': 
             struct symbol *sym = a->data.sym;
             if (sym->type == 2) { //string
-                v.type = 1;
-                v.data.string = strdup(sym->name);
+                v.type = 2;
+                v.data.string = strdup(a->data.s);
             } else {
-                v.type = 0; // Number
+                v.type = 1; // Number
                 v.data.number = sym->value;
             }
             break;
         /* declaration */
         case 'D':
             //Variable declaration is handled during parsing; nothing to be done here
-            v.type = 0;
+            v.type = 1;
             v.data.number = 0.0;
             break;
         /* assignment */
@@ -237,52 +238,41 @@ val_t eval(struct ast *a)
 
             if (a->l == NULL) {
                 // Variable declaration without initialization
-                if (sym->type == 1) { 
+                if (sym->type == 1 || sym->type == 6 || sym->type == 7) { 
                     sym->value = 0.0; // Default value for numeric type
+                    v.type = 1;
                 } else if (sym->type == 2) {
                     sym->value = 0.0; // Default "dummy" value for strings (or handle differently)
                     sym->name = "";   // Or set to a valid default string value
+                    v.type = sym->type;
                 } 
+                else {
+                    yyerror("Unkown type of variable '%s'", sym->name);
+                    return v = (val_t){.type = 1, .data.number = 0.0};
+                }
                 // Add handling for other types if needed
-                v.type = sym->type - 1;
-                v.data.number = sym->value;
-                v.data.string = strdup(sym->name);
                 break;
             }
             
             val_t val = eval(a->l);         // Evaluate the expression on the left-hand side
 
             // Handle assignment from another variable
-            if (a->l->nodetype == 'N') { 
-                struct symbol *source_sym = a->l->data.sym;
-                // Check if types of source and destination symbols match
-                if (source_sym->type != sym->type) {
-                    yyerror("Type mismatch between variable '%s' and '%s'", sym->name, source_sym->name);
-                    return v = (val_t){.type = 1, .data.number = 0.0};
-                }
-            } 
-            // Handle numeric assignment (constant, variable, or expression)
-            else if (sym->type == 1) { 
-                if (a->l->nodetype != 'K' && a->l->nodetype != 'N' &&
-                    a->l->nodetype != '+' && a->l->nodetype != '-' &&
-                    a->l->nodetype != '*' && a->l->nodetype != '/' &&
-                    a->l->nodetype != '^' && a->l->nodetype != 'M') {
-                    yyerror("Invalid numeric assignment to variable '%s'", sym->name);
-                    return v = (val_t){.type = 1, .data.number = 0.0};
-                }
+            if (sym->type != val.type) {
+                yyerror("Type mismatch: cannot assign type %d to variable '%s' of type %d",
+                        val.type, sym->name, sym->type);
+                return v = (val_t){.type = 1, .data.number = 0.0}; 
             }
-            // Handle string assignment
+            // Handle numeric assignment (constant, variable, or expression)
+            if (sym->type == 1 || sym->type == 6 || sym->type == 7) {
+                v.type = 1;
+                sym->value = val.data.number;
+                v.data.number = sym->value;
+            }
             else if (sym->type == 2) {
-                if (a->l->nodetype != 'S' && a->l->nodetype != 'N') {
-                    yyerror("Invalid string assignment to variable '%s'", sym->name);
-                    return v = (val_t){.type = 1, .data.number = 0.0};
-                }
+                v.type = 2;
+                v.data.string = strdup(val.data.string);
             }
             // TODO: add additional types if needed
-
-            // Assign value
-            sym->value = val.data.number; 
-            v.data.number = sym->value; 
             break;
         }
         
@@ -296,12 +286,12 @@ val_t eval(struct ast *a)
                 return v;
             }
 
-            if (left.type == 0) { // Numbers
-                v.type = 0;
-                v.data.number = left.data.number + right.data.number;
-            } else if (left.type == 1) { // Strings (concatenation)
-                size_t len = strlen(left.data.string) + strlen(right.data.string) + 1;
+            if (left.type == 1 || left.type == 6 || left.type == 7) { // Numbers
                 v.type = 1;
+                v.data.number = left.data.number + right.data.number;
+            } else if (left.type == 2) { // Strings (concatenation)
+                size_t len = strlen(left.data.string) + strlen(right.data.string) + 1;
+                v.type = 2;
                 v.data.string = malloc(len);
                 snprintf(v.data.string, len, "%s%s", left.data.string, right.data.string);
             }
@@ -318,12 +308,12 @@ val_t eval(struct ast *a)
                 yyerror("Type mismatch operation");
                 return v;
             }
-            if (left.type == 1|| right.type == 1) {
+            if (left.type == 2|| right.type == 2) {
                 yyerror("Invalid operands to arithmetic operator: both must be numbers");
                 exit(1);
             }
 
-            v.type = 0;
+            v.type = 1;
             switch (a->nodetype) {
                 case '-': v.data.number = left.data.number - right.data.number; break;
                 case '*': v.data.number = left.data.number * right.data.number; break;
@@ -333,17 +323,27 @@ val_t eval(struct ast *a)
             break;
         }
         case '|': {
-            v.type = 0;
+            val_t left = eval(a->l);
+            if (left.type == 2) {
+                yyerror("Invalid operand to arithmetic operator: must be a number");
+                exit(1);
+            }
+            v.type = 1;
             v.data.number = fabs(eval(a->l).data.number); break;
         }
 
         case 'M': {
-            v.type = 0;
+            val_t left = eval(a->l);
+            if (left.type == 2) {
+                yyerror("Invalid operand to arithmetic operator: must be a number");
+                exit(1);
+            }
+            v.type = 1;
             v.data.number = -eval(a->l).data.number; break;
         }
         case '!': {
             if(!a->l) {
-                yyerror("Invalid operands to 'not' operator");
+                yyerror("Invalid operand to 'not' operator");
                 exit(1);
             }
             v.data.number = !(eval(a->l).data.number); break;
@@ -366,7 +366,7 @@ val_t eval(struct ast *a)
                 return v;
             }
 
-            v.type = 0;
+            v.type = 1;
             switch (a->nodetype) {
                 case '1': v.data.number = (left.data.number > right.data.number) ? 1 : 0; break;
                 case '2': v.data.number = (left.data.number < right.data.number) ? 1 : 0; break;
@@ -551,10 +551,10 @@ void yyerror(const char *s, ...) {
 
 void print_val(val_t val) {
     switch (val.type) {
-        case 0: // Numeric type
+        case 1: // Numeric type
             printf("Number: %.6f\n", val.data.number);
             break;
-        case 1: // String type
+        case 2: // String type
             printf("String: %s\n", val.data.string);
             break;
         default:
@@ -578,7 +578,7 @@ void print_ast(struct ast *node, int depth, char *prefix) {
             break;
 
         case 'N': // Variable
-            if (node->data.sym->name == "str") { // String variable
+            if (node->data.sym->type == 2) { // String variable
                 printf(", Variable: %s, Value (string): \"%s\"\n", node->data.sym->name, node->data.s);
             } else { // Numeric variable
                 printf(", Variable: %s, Value (number): %f\n", node->data.sym->name, node->data.sym->value);
@@ -598,10 +598,10 @@ void print_ast(struct ast *node, int depth, char *prefix) {
             break;
 
         case 'S': // String literal
-            printf(", String: \"%s\"\n", node->data.s);
+            printf(", String: %s\n", node->data.s);
             break;
 
-        case '+': case '-': case '*': case '/': // Arithmetic operations
+        case '+': case '-': case '*': case '/': case '^': // Arithmetic operations
             printf(", Operation result: %f\n", result.data.number);
             break;
 

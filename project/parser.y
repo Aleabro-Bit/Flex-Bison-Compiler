@@ -26,13 +26,15 @@ int yylex();
     struct symbol *s; // which symbol
     struct symlist *sl; // symbol list
     int fn;          // which function
+    int dt;          // which data type
 }
 
 %token STEP TO FROM WHEN OTHERWISE WHETHER RETURN DEFINE UNTIL EOL THEN BOOLEAN AND OR NOT
 %token <op> PLUS MINUS MUL DIV POW ASSIGN ABS
 %token <num> NUM BINARY ROMAN
 %token <st> STR   
-%token <fn> FUNC DATA_TYPE
+%token <fn> FUNC 
+%token <dt> DATA_TYPE
 %token <s> ID
 
 %type <a> expression statement statements whether when  condition explist  assignment return flow ufunction funcall START declare init value from

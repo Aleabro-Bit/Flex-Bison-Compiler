@@ -986,37 +986,37 @@ YY_RULE_SETUP
 case 10:
 YY_RULE_SETUP
 #line 36 "lexer.l"
-{ yylval.fn = 1; return DATA_TYPE; }
+{ yylval.dt = 1; return DATA_TYPE; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
 #line 37 "lexer.l"
-{ yylval.fn = 2; return DATA_TYPE; }
+{ yylval.dt = 2; return DATA_TYPE; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
 #line 38 "lexer.l"
-{ yylval.fn = 3; return DATA_TYPE; }
+{ yylval.dt = 3; return DATA_TYPE; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
 #line 39 "lexer.l"
-{ yylval.fn = 4; return DATA_TYPE; }
+{ yylval.dt = 4; return DATA_TYPE; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
 #line 40 "lexer.l"
-{ yylval.fn = 5; return DATA_TYPE; }
+{ yylval.dt = 5; return DATA_TYPE; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
 #line 41 "lexer.l"
-{yylval.fn = 6; return DATA_TYPE; }
+{yylval.dt = 6; return DATA_TYPE; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
 #line 42 "lexer.l"
-{yylval.fn = 7; return DATA_TYPE; }
+{yylval.dt = 7; return DATA_TYPE; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
