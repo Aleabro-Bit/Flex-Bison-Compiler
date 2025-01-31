@@ -69,6 +69,7 @@ struct symbol *lookup(char* sym)
             sp->name = strdup(sym);
             sp->value = 0;
             sp->type = 0;
+            sp->string = NULL;
             sp->func = NULL;
             sp->syms = NULL;
 

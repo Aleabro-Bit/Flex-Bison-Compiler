@@ -35,8 +35,7 @@ ROM 0(M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*))
 
 "num"   { yylval.dt = 1; return DATA_TYPE; }
 "str"   { yylval.dt = 2; return DATA_TYPE; }
-"bool"  { yylval.dt = 3; return DATA_TYPE; }
-"list"  { yylval.dt = 4; return DATA_TYPE; }
+"list"  { yylval.dt = 3; return DATA_TYPE; }
 "void"  { yylval.dt = 5; return DATA_TYPE; }
 "roman" {yylval.dt = 6; return DATA_TYPE; }
 "binary" {yylval.dt = 7; return DATA_TYPE; }

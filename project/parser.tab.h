@@ -65,26 +65,25 @@ extern int yydebug;
     UNTIL = 266,                   /* UNTIL  */
     EOL = 267,                     /* EOL  */
     THEN = 268,                    /* THEN  */
-    BOOLEAN = 269,                 /* BOOLEAN  */
-    AND = 270,                     /* AND  */
-    OR = 271,                      /* OR  */
-    NOT = 272,                     /* NOT  */
-    PLUS = 273,                    /* PLUS  */
-    MINUS = 274,                   /* MINUS  */
-    MUL = 275,                     /* MUL  */
-    DIV = 276,                     /* DIV  */
-    POW = 277,                     /* POW  */
-    ASSIGN = 278,                  /* ASSIGN  */
-    ABS = 279,                     /* ABS  */
-    NUM = 280,                     /* NUM  */
-    BINARY = 281,                  /* BINARY  */
-    ROMAN = 282,                   /* ROMAN  */
-    STR = 283,                     /* STR  */
-    FUNC = 284,                    /* FUNC  */
-    DATA_TYPE = 285,               /* DATA_TYPE  */
-    ID = 286,                      /* ID  */
-    CMP = 287,                     /* CMP  */
-    UMINUS = 288                   /* UMINUS  */
+    AND = 269,                     /* AND  */
+    OR = 270,                      /* OR  */
+    NOT = 271,                     /* NOT  */
+    PLUS = 272,                    /* PLUS  */
+    MINUS = 273,                   /* MINUS  */
+    MUL = 274,                     /* MUL  */
+    DIV = 275,                     /* DIV  */
+    POW = 276,                     /* POW  */
+    ASSIGN = 277,                  /* ASSIGN  */
+    ABS = 278,                     /* ABS  */
+    NUM = 279,                     /* NUM  */
+    BINARY = 280,                  /* BINARY  */
+    ROMAN = 281,                   /* ROMAN  */
+    STR = 282,                     /* STR  */
+    FUNC = 283,                    /* FUNC  */
+    DATA_TYPE = 284,               /* DATA_TYPE  */
+    ID = 285,                      /* ID  */
+    CMP = 286,                     /* CMP  */
+    UMINUS = 287                   /* UMINUS  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -104,7 +103,7 @@ union YYSTYPE
     int fn;          // which function
     int dt;          // which data type
 
-#line 108 "parser.tab.h"
+#line 107 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

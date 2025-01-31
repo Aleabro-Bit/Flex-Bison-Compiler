@@ -5,22 +5,19 @@
 extern int yylineno; /* from lexer */
 void yyerror(const char *s, ...);
 
-struct list {
-    union {
-        double value;     // Value of the list element
-        char *string;     // String value
-    } data;
-    struct list *next;    // Pointer to next element
-};
-
 typedef struct value {
-    int type;               // Type of value: 0 = number, 1 = string, 2 = list
+    int type;               // Type of value: 1 = number, 2 = string, 3 = list
     union {
         double number;       
-        char *string;        
-        struct list *list;   // For lists
+        char *string;  
+        struct list *list;      
     } data;
 }val_t;
+
+struct list {
+    val_t *value;            // Value of the element
+    struct list *next;    // Pointer to next element
+};
 
 /* symbol table */
 struct symbol { /* a variable name */
@@ -29,7 +26,7 @@ struct symbol { /* a variable name */
  struct ast *func; /* stmt for the function */
  struct symlist *syms; /* list of dummy args */
  int type;
- struct list *list_value;
+ char *string;
 };
 
 struct symbol *lookup(char*);

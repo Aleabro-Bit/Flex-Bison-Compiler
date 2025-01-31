@@ -1,0 +1,8 @@
+num a = 5;
+1+5;
+print(a);
+
+define avg(a,b){
+    (a+b)/2;
+}
+print (avg(2,3));
