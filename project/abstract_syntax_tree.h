@@ -47,9 +47,10 @@ enum bifs { /* built-in functions */
     B_sin,
     B_cos,
     B_tan,
-    B_size,
-    B_print_list,   
-    B_get
+    B_size,  
+    B_get,
+    B_input,
+    B_split
     
 };
 

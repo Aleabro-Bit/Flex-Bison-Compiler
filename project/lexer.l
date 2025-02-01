@@ -70,8 +70,9 @@ ROM 0(M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*))
 "cos"           { yylval.fn = B_cos; return FUNC;}
 "tan"           { yylval.fn = B_tan; return FUNC;}
 "size"          { yylval.fn = B_size; return FUNC;}
-"print_list"    { yylval.fn = B_print_list; return FUNC;}
 "get"           { yylval.fn = B_get; return FUNC;}
+"input"         { yylval.fn = B_input; return FUNC;}
+"split"         { yylval.fn = B_split; return FUNC;}
 
 
 [,:{}=()~;]	{ yylval.st = strdup(yytext); return *yytext;}

@@ -4,8 +4,7 @@
 #include <string.h>
 #include <math.h>
 #include "abstract_syntax_tree.h"
-/*TODO:  IMPLEMENT LISTS, 
-IMPLEMENT SOME BUILT IN FUNCTIONS, RETURN, SCOPE SISTEMARE IL PARSER */
+/*TODO: IMPLEMENT SOME BUILT IN FUNCTIONS, RETURN, SCOPE SISTEMARE IL PARSER */
 int yydebug = 0;
 extern FILE *yyin;
 extern int yylineno;

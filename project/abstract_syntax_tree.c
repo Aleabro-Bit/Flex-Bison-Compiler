@@ -201,20 +201,30 @@ static double factorial(double n) {
 
 /* print built in function */
 void print_func(struct ast *arg) {            
-    val_t value = eval(arg); // Evaluate the argument
-    if (value.type == 1) {
-        // Print numbers
-        printf("%g", value.data.number);
-    } else if (value.type == 2) {
-        // Print strings
-        printf("%s", value.data.string);
-    } else {
-        yyerror("Unsupported type in print");
+struct ast *current = arg; // Nodo attuale
+
+    while (current) {  
+        val_t value = eval(current); // Valuta il nodo sinistro
+
+        if (value.type == 1) {
+            printf("%g", value.data.number);
+        } else if (value.type == 2) {
+            printf("%s", value.data.string);
+        } else if (value.type == 3) {
+            print_list(value.data.list);
+        } else {
+            yyerror("Unsupported type in print");
+        }
+
+        // Se ci sono altri argomenti, aggiunge uno spazio tra di loro
+        if (current->r) {
+            printf(" ");
+        }
+
+        current = current->r; // Passa al prossimo argomento
     }
-    if (arg) {
-        // Print a space if more arguments are coming
-        printf("\n");
-    }
+
+    printf("\n"); // Nuova riga alla fine
 }
 
 /* Returns the size of a list */
@@ -280,21 +290,16 @@ static val_t callbuiltin(struct ast *a)
                 yyerror("length() expects a list");
             }
             return result;
-        case B_print_list:
-            if (v.type == 3) { // If it's a list
-                print_list(v.data.list);
-            } else {
-                yyerror("print_list() expects a list");
-            }
-            break;
         case B_get:
-            if (v.type == 3 && a->l) { 
-                val_t index_val = eval(a->l);
-                if (index_val.type == 1) { // Assume that the index is a number
+            if (v.type == 3 && a->l->r) { 
+                val_t index_val = eval(a->l->r); // Evaluate the index
+                if (index_val.type == 1 || index_val.type == 6 || index_val.type == 7) { // Assume that the index is a number
                     double index = index_val.data.number;
-                    val_t *element = get(v.data.list, index);
+                    val_t list_node = eval(a->l->l);
+                    val_t *element = get(list_node.data.list, index);
                     if (element) {
-                        return *element; // Element found
+                        result = *element; // Element found
+                        
                     } else {
                         yyerror("Index out of bounds");
                     }
@@ -305,7 +310,40 @@ static val_t callbuiltin(struct ast *a)
                 yyerror("get() expects a list and an index");
             }
             return result;
-        
+        case B_input: {
+            char buffer[1024]; // Buffer per l'input
+
+        // Stampare il prompt se disponibile
+        if (v.type == 2 && v.data.string) {
+            printf("%s: ", v.data.string);
+        } else {
+            printf("Input: ");
+        }
+
+        // Lettura dell'input
+        if (fgets(buffer, sizeof(buffer), stdin) == NULL) {
+            yyerror("Error reading input");
+            return (val_t){.type = 2, .data.string = strdup("")}; // Ritorna stringa vuota in caso di errore
+        }
+
+        // Rimuovere il carattere di newline
+        buffer[strcspn(buffer, "\n")] = 0;
+
+        // Tentativo di conversione in numero
+        char *endptr;
+        double num = strtod(buffer, &endptr);
+
+        if (*endptr == '\0') { // Se l'intero buffer è stato convertito in numero
+            result.type = 1;
+            result.data.number = num;
+        } else { // Altrimenti è una stringa
+            result.type = 2;
+            result.data.string = strdup(buffer);
+        }
+
+        return result;
+        }
+
         default:
             yyerror("Unknown built-in function %d", functype);
             return result = (val_t){.type = 1, .data.number = 0.0};
@@ -429,6 +467,7 @@ val_t eval(struct ast *a)
             struct symbol *sym = a->data.sym; // Symbol being assigned
 
             if (a->l == NULL) {
+                
                 // Variable declaration without initialization
                 if (sym->type == 1 || sym->type == 6 || sym->type == 7) { 
                     sym->value = 0.0; // Default value for numeric type
@@ -633,21 +672,19 @@ val_t eval(struct ast *a)
         
         /* list of statements */
         case 'L': 
-        val_t left_val = eval(a->l);  // Valutiamo il primo elemento
+        val_t left_val = eval(a->l);  
 
-            // Se il primo elemento è una lista, costruiamo la lista
+            // If the first element is a list, create a new list
             if (left_val.type == 3) {
                 v.type = 3;
                 v.data.list = linked_list_ast(a->l);
             } else {
-                v = left_val; // Manteniamo il tipo del primo elemento
+                v = left_val; 
             }
 
-            // Valutiamo il secondo elemento (a->r) se esiste
             if (a->r) {
                 val_t right_val = eval(a->r);
-                
-                // Se entrambi gli elementi sono liste, concatenarle
+                // If both elements are lists, concatenate them
                 if (left_val.type == 3 && right_val.type == 3) {
                     v.data.list = concat_lists(left_val.data.list, right_val.data.list);
                 }
