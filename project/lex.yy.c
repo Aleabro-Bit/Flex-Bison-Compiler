@@ -644,7 +644,7 @@ char *yytext;
 #line 1 "lexer.l"
 #line 2 "lexer.l"
 #include "parser.tab.h"
-#include "abstract_syntax_tree.h"
+#include "helper.h"
 
 static char *string_buffer = NULL;
 static size_t string_buffer_len = 0;

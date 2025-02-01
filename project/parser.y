@@ -3,14 +3,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "abstract_syntax_tree.h"
+#include "helper.h"
 /*TODO: IMPLEMENT SOME BUILT IN FUNCTIONS, RETURN, SCOPE SISTEMARE IL PARSER */
 int yydebug = 0;
 extern FILE *yyin;
 extern int yylineno;
 
 void print_val(val_t val);
-
 
 int yylex();
 %}
@@ -36,7 +35,7 @@ int yylex();
 %token <dt> DATA_TYPE
 %token <s> ID
 
-%type <a> expression statement statements whether when  condition explist  assignment return flow ufunction funcall START declare init value from list
+%type <a> expr stmt stmts whether when condition explist  assignment return flow ufunction funcall START declare init value from list
 %type <sl> symlist
 
 %nonassoc <fn> CMP
@@ -49,26 +48,26 @@ int yylex();
 %%
 
 START: /* nothing */
-    | START statements EOL {$$ = newast('L', $1, $2); val_t result = eval($2); print_ast($2, 0, " ");  print_val(result);  }
+    | START stmts EOL {$$ = newast('L', $1, $2); val_t result = eval($2); print_ast($2, 0, " ");  print_all_scopes();  }
     | START ufunction EOL
     | START error EOL { yyerrok; printf("> "); }
     | START EOL  { printf("> "); }
     ;
-statements: 
-     statement ';' statements { if ($3 == NULL) 
+stmts: 
+     stmt ';' stmts { if ($3 == NULL) 
         $$ = $1;
     else 
         $$ = newast('L', $1, $3); 
         } // expression or statement list
-    | statement ';' { $$ = $1; }
+    | stmt ';' { $$ = $1; }
     ;
-statement:
+stmt:
      declare { $$ = $1; }
     | assignment { $$ = $1; } 
     | funcall { $$ = $1; }
     | return { $$ = $1; }
     | flow  { $$ = $1; }
-    | expression { $$ = $1; }
+    | expr { $$ = $1; }
     ;
 flow: 
      whether
@@ -88,21 +87,21 @@ declare: DATA_TYPE ID init {
     }
 
     ;
-init: ASSIGN expression { $$ = $2; }
+init: ASSIGN expr { $$ = $2; }
     | { $$ = NULL; }
     ;
-assignment: ID ASSIGN expression { $$ = newasgn($1, $3); }
+assignment: ID ASSIGN expr { $$ = newasgn($1, $3); }
     ;
-whether: WHETHER '[' condition ']' THEN ':' statements { $$ = newflow('I', $3, $7, NULL); } //TODO: change syntax
-    | WHETHER '[' condition ']' THEN ':' statements OTHERWISE ':' statements { $$ = newflow('I', $3, $7, $10); } 
+whether: WHETHER '[' condition ']' THEN ':' '{' stmts '}' { $$ = newflow('I', $3, $8, NULL); } 
+    | WHETHER '[' condition ']' THEN ':' '{' stmts '}' OTHERWISE ':' '{'stmts '}' { $$ = newflow('I', $3, $8, $13); } 
     ;
 
-when: WHEN '[' condition ']'  '{' statements '}' { $$ = newflow('W', $3, $6, NULL); } 
-    | WHEN '{' statements '}' UNTIL '[' condition ']' { $$ = newflow('W', $7, $3, $7); }
+when: WHEN '[' condition ']'  '{' stmts '}' { $$ = newflow('W', $3, $6, NULL); } 
+    | WHEN '{' stmts '}' UNTIL '[' condition ']' { $$ = newflow('W', $7, $3, $7); }
     ;
 
 /* from works only if you declare the variable in the from statement */
-from: FROM '[' declare TO expression STEP expression ']' '{' statements '}'
+from: FROM '[' declare TO expr STEP expr ']' '{' stmts '}'
      {
          struct ast *add = newast('+', newref($3->l->data.sym), $7);
          struct ast *ass = newasgn($3->l->data.sym, add);
@@ -110,21 +109,21 @@ from: FROM '[' declare TO expression STEP expression ']' '{' statements '}'
          $$ = newfor($3, cmp, ass, $10);
      } 
      ;
-condition: expression CMP expression { $$ = newcmp($2, $1, $3); }
+condition: expr CMP expr { $$ = newcmp($2, $1, $3); }
     | condition AND condition { $$ = newast('&', $1, $3); }
     | condition OR condition { $$ = newast('O', $1, $3); }
     | NOT condition { $$ = newast('!', $2, NULL); }
     | '(' condition ')' { $$ = $2; } 
-    | expression {}    
+    | expr {}    
     ;
-expression: expression PLUS expression { $$ = newast('+', $1, $3); }
-    | expression MINUS expression { $$ = newast('-', $1, $3); }
-    | expression MUL expression { $$ = newast('*', $1, $3); }
-    | expression DIV expression { $$ = newast('/', $1, $3); }
-    | expression POW expression { $$ = newast('^', $1, $3); }
-    | ABS expression ABS { $$ = newast('|', $2, NULL); }
-    | MINUS expression %prec UMINUS{ $$ = newast('M', $2, NULL); }
-    | '(' expression ')' { $$ = $2; }
+expr: expr PLUS expr { $$ = newast('+', $1, $3); }
+    | expr MINUS expr { $$ = newast('-', $1, $3); }
+    | expr MUL expr { $$ = newast('*', $1, $3); }
+    | expr DIV expr { $$ = newast('/', $1, $3); }
+    | expr POW expr { $$ = newast('^', $1, $3); }
+    | ABS expr ABS { $$ = newast('|', $2, NULL); }
+    | MINUS expr %prec UMINUS{ $$ = newast('M', $2, NULL); }
+    | '(' expr ')' { $$ = $2; }
     | value { $$ = $1; }
     | funcall { $$ = $1; }
     ;
@@ -140,16 +139,16 @@ list: '[' ']' { $$ = NULL; }
     | '[' explist ']' { $$ = $2; } 
     ;
 
-explist: expression
-    | expression ',' explist { $$ = newast('L', $1, $3); }
+explist: expr
+    | expr ',' explist { $$ = newast('L', $1, $3); }
     ;
 symlist: ID          { $$ = newsymlist($1, NULL); }
     | ID ',' symlist { $$ = newsymlist($1, $3); }
     ;
-return: RETURN expression ';' { $$ = newast('R', $2, NULL); } //TODO: add return
+return: RETURN expr ';' { $$ = newast('R', $2, NULL); } //TODO: add return
     ;
-ufunction: DEFINE  ID '(' symlist ')' '{' statements '}' { dodef($2,$4,$7); printf("Function %s defined\n", $2->name); }
-    | DEFINE  ID '('  ')' '{' statements '}' { dodef($2,NULL,$6); printf("Function %s defined\n", $2->name); }
+ufunction: DEFINE  ID '(' symlist ')' '{' stmts '}' { dodef($2,$4,$7); printf("Function %s defined\n", $2->name); }
+    | DEFINE  ID '('  ')' '{' stmts '}' { dodef($2,NULL,$6); printf("Function %s defined\n", $2->name); }
     ;
 funcall: ID '(' explist ')' { $$ = newcall($1, $3); }
     | FUNC '(' explist ')' { $$ = newfunc($1, $3); }

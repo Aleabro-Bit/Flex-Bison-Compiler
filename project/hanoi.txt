@@ -1,23 +1,14 @@
 define hanoi(n, from_rod, to_rod, aux_rod) {
     whether (n == 1) {
-        print(<<Move disk 1 from>>  to %c\n",  to_rod);
-        print(from_rod);
-        print(<<to>>);
-        print(to_rod);
-        print(<<#k>>);
+        print(<<Move disk 1 from>>, from_rod, <<to>>, to_rod, <<#k>>);
         return;
     }
     hanoi(n - 1, from_rod, aux_rod, to_rod);
-    printf("Move disk %d from %c to %c\n", n, from_rod, to_rod);
+    print(<<Move disk>>, n, <<from>>, from_rod, <<to>>, to_rod <<#k>>);
     hanoi(n - 1, aux_rod, to_rod, from_rod);
-}
+}   
 
-int main() {
-    
     num n = input(<<enter the number of disks>>);
     
     print(<<Sequence of moves:#k>>);
     hanoi(n, 'A', 'C', 'B');
-    
-    return 0;
-}

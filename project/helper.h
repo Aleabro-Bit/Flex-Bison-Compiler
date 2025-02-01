@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#define MAX_SCOPE_DEPTH 128
 
 extern int yylineno; /* from lexer */
 void yyerror(const char *s, ...);
@@ -29,8 +30,6 @@ struct symbol { /* a variable name */
  char *string;
  struct list *list;
 };
-
-struct symbol *lookup(char*);
 
 /* list of symbols, for an argument list */
 struct symlist {
@@ -73,14 +72,17 @@ struct ast {
     } data;
 };
 
+
+/* Symbol table functions */
+struct symbol *lookup(char*);
 struct symlist *newsymlist(struct symbol *sym, struct symlist *next);
 void symlistfree(struct symlist *sl);
-
 
 /* build an AST */
 struct ast *newast(int nodetype, struct ast *l, struct ast *r);
 struct ast *newcmp(int cmptype, struct ast *l, struct ast *r);
 struct ast *newfunc(int functype, struct ast *l);
+void print_symtab();
 
 struct ast *newcall(struct symbol *s, struct ast *l);
 struct ast *newdeclare(struct symbol *name, struct symlist *args, struct ast *body);
@@ -96,10 +98,35 @@ void dodef(struct symbol *name, struct symlist *syms, struct ast *stmts);
 val_t eval(struct ast *);
 /* delete and free an AST */
 void treefree(struct ast *);
-
 void print_ast(struct ast *node, int depth, char *prefix);
+
+/* Functions */
 int roman_to_int(const char *roman);
 void print_val(val_t val);
+double factorial(double n);
+void print_func(struct ast *arg);
+
+/* Linked List Functions*/
+void print_list(struct list *lst);
+struct list *linked_list_ast(struct ast *args);
+int list_length(struct list *head);
+val_t *get(struct list *head, int index);
+struct list *concat_lists(struct list *head1, struct list *head2);
+
+/* Scope*/
+/* Struttura dello Scope */
+typedef struct scope {
+    struct symbol **symbols;  // Array di puntatori ai simboli locali
+    int symbol_count;
+} scope_t;
+
+void push_scope();
+void pop_scope();
+struct symbol *lookup_variable(const char *name);
+void assign_variable(struct symbol *sym, val_t value);
+void print_all_scopes();
+
+
 
 
 
