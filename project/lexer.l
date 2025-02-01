@@ -61,14 +61,17 @@ ROM 0(M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*))
 ">="    { yylval.fn = 5; return CMP;}
 "<="    { yylval.fn = 6; return CMP;}
 
-"sqrt"  { yylval.fn = B_sqrt; return FUNC;}
-"exp"   { yylval.fn = B_exp; return FUNC;}
-"log"   { yylval.fn = B_log; return FUNC;}
-"print" { yylval.fn = B_print; return FUNC;}
-"fact"  { yylval.fn = B_fact; return FUNC;}
-"sin"   { yylval.fn = B_sin; return FUNC;}
-"cos"   { yylval.fn = B_cos; return FUNC;}
-"tan"   { yylval.fn = B_tan; return FUNC;}
+"sqrt"          { yylval.fn = B_sqrt; return FUNC;}
+"exp"           { yylval.fn = B_exp; return FUNC;}
+"log"           { yylval.fn = B_log; return FUNC;}
+"print"         { yylval.fn = B_print; return FUNC;}
+"fact"          { yylval.fn = B_fact; return FUNC;}
+"sin"           { yylval.fn = B_sin; return FUNC;}
+"cos"           { yylval.fn = B_cos; return FUNC;}
+"tan"           { yylval.fn = B_tan; return FUNC;}
+"size"          { yylval.fn = B_size; return FUNC;}
+"print_list"    { yylval.fn = B_print_list; return FUNC;}
+"get"           { yylval.fn = B_get; return FUNC;}
 
 
 [,:{}=()~;]	{ yylval.st = strdup(yytext); return *yytext;}

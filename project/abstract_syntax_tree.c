@@ -4,6 +4,9 @@
 # include <string.h>
 # include <math.h>
 # include "abstract_syntax_tree.h"
+struct list *linked_list_ast(struct ast *args);
+void print_list(struct list *lst);
+struct list *concat_lists(struct list *l1, struct list *l2);
 
 /* Build an AST */
 struct ast *newast(int nodetype, struct ast *l, struct ast *r) {
@@ -214,6 +217,29 @@ void print_func(struct ast *arg) {
     }
 }
 
+/* Returns the size of a list */
+int list_length(struct list *head) {
+    int count = 0;
+    while (head) {
+        count++;
+        head = head->next;
+    }
+    return count;
+}
+
+/* Access a particular element of the list */
+val_t *get(struct list *head, int index) {
+    int i = 0;
+    while (head) {
+        if (i == index) {
+            return head->value;  // Returns the current value
+        }
+        head = head->next;
+        i++;
+    }
+    return NULL;  // Return null if value is out of bounds
+}
+
 /* built-in functions */
 static val_t callbuiltin(struct ast *a)
 {
@@ -247,6 +273,39 @@ static val_t callbuiltin(struct ast *a)
         case B_tan:
             result.data.number = tan(v.data.number);
             return result;
+        case B_size:
+            if (v.type == 3) { // If it's a list
+                result.data.number = list_length(v.data.list);
+            } else {
+                yyerror("length() expects a list");
+            }
+            return result;
+        case B_print_list:
+            if (v.type == 3) { // If it's a list
+                print_list(v.data.list);
+            } else {
+                yyerror("print_list() expects a list");
+            }
+            break;
+        case B_get:
+            if (v.type == 3 && a->l) { 
+                val_t index_val = eval(a->l);
+                if (index_val.type == 1) { // Assume that the index is a number
+                    double index = index_val.data.number;
+                    val_t *element = get(v.data.list, index);
+                    if (element) {
+                        return *element; // Element found
+                    } else {
+                        yyerror("Index out of bounds");
+                    }
+                } else {
+                    yyerror("get() expects a numeric index");
+                }
+            } else {
+                yyerror("get() expects a list and an index");
+            }
+            return result;
+        
         default:
             yyerror("Unknown built-in function %d", functype);
             return result = (val_t){.type = 1, .data.number = 0.0};
@@ -319,8 +378,7 @@ static val_t calluser(struct ast *a) {
 
     return v;
 }
-struct list *linked_list_ast(struct ast *args);
-void print_list(struct list *lst);
+
 /* evaluate an AST */
 val_t eval(struct ast *a)
 {
@@ -351,7 +409,12 @@ val_t eval(struct ast *a)
             if (sym->type == 2) { //string
                 v.type = 2;
                 v.data.string = strdup(sym->string);
-            } else {
+            } 
+            else if(sym->type == 3) { //list
+                v.type = 3;
+                v.data.list = sym->list;
+            }
+            else {
                 v.type = 1; // Number
                 v.data.number = sym->value;
             }
@@ -359,8 +422,6 @@ val_t eval(struct ast *a)
         /* declaration */
         case 'D':
             //Variable declaration is handled during parsing; nothing to be done here
-            v.type = 1;
-            v.data.number = 0.0;
             break;
         /* assignment */
         case '=': 
@@ -378,9 +439,9 @@ val_t eval(struct ast *a)
                     v.type = sym->type;
                 } else if (sym->type == 3) { // Default list initialization
                     sym->list = NULL; // Empty list
-                    v.type = 3;
+                    v.type = sym->type;
                     v.data.list = NULL;
-                }else {
+                } else {
                     yyerror("Unkown type of variable '%s'", sym->name);
                     return v = (val_t){.type = 1, .data.number = 0.0};
                 }
@@ -397,6 +458,8 @@ val_t eval(struct ast *a)
                     return v = (val_t){.type = 1, .data.number = sym->value};
                 } else if (sym->type == 2) { /* String type*/
                     return v = (val_t){.type = 2, .data.string = strdup(sym->string)};
+                } else if (sym->type == 3) { /* List type*/
+                    return v = (val_t){.type = 3, .data.list = sym->list};
                 }
                 return v = (val_t){.type = 1, .data.number = 0.0}; 
             }
@@ -412,15 +475,12 @@ val_t eval(struct ast *a)
                 v.type = sym->type;
                 v.data.string = strdup(sym->string);
             }
-            else if (sym->type == 3) {
-        if (a->l->nodetype == 'L') { // Se il nodo è di tipo lista
-            struct list *lst = linked_list_ast(a->l); // Crea la lista
-            sym->list = lst; // Assegna la lista alla variabile
-            v.type = 3;
-            v.data.list = lst;
-            }
-            } 
-            // TODO: add additional types if needed
+                else if (sym->type == 3) {
+                struct list *lst = linked_list_ast(a->l); // Create a list from the AST
+                sym->list = lst; 
+                v.type = sym->type;
+                v.data.list = lst;
+                } 
             break;
         }
         
@@ -429,16 +489,24 @@ val_t eval(struct ast *a)
             val_t left = eval(a->l);
             val_t right = eval(a->r);
             
-            if (left.type != right.type) {
-                yyerror("Type mismatch in '+' operation");
-                return v;
-            }
-
             if (left.type == 2 && right.type == 2) { // Strings (concatenation)
                 size_t len = strlen(left.data.string) + strlen(right.data.string) + 1;
                 v.type = 2;
                 v.data.string = malloc(len);
                 snprintf(v.data.string, len, "%s%s", left.data.string, right.data.string);
+            }
+            else if (left.type == 3 && right.type == 3) { // Lists (concatenation)
+                v.type = 3;
+                v.data.list = concat_lists(left.data.list, right.data.list);
+            }
+            else if (left.type == 3 && right.type != 3) { // Add element to list
+            v.type = 3;
+            struct list *new_value = linked_list_ast(a->r);
+            v.data.list = concat_lists(left.data.list, new_value);  // Aggiunge il nuovo elemento
+            }
+            else if (left.type != right.type) {
+                yyerror("Type mismatch in '+' operation");
+                return v;
             }
             else { // Numbers
                 v.type = 1;
@@ -557,18 +625,33 @@ val_t eval(struct ast *a)
         /* for loop */
         case 'T': 
         eval(a->l); // Initialize
-            while (eval(a->data.flow.cond).data.number != 0) { // Controlla condizione
-                eval(a->r->l); // Esegui corpo
-                eval(a->r->r); // Esegui step
+            while (eval(a->data.flow.cond).data.number != 0) { // Control the condition
+                eval(a->r->l); // Execute the body
+                eval(a->r->r); // Execute the step
             }
             break;
         
         /* list of statements */
         case 'L': 
-            v.type = 3; // Tipo lista
-            v.data.list = linked_list_ast(a->l); // Costruisci la lista
-            if (a->l) eval(a->l);
-            if (a->r) eval(a->r);
+        val_t left_val = eval(a->l);  // Valutiamo il primo elemento
+
+            // Se il primo elemento è una lista, costruiamo la lista
+            if (left_val.type == 3) {
+                v.type = 3;
+                v.data.list = linked_list_ast(a->l);
+            } else {
+                v = left_val; // Manteniamo il tipo del primo elemento
+            }
+
+            // Valutiamo il secondo elemento (a->r) se esiste
+            if (a->r) {
+                val_t right_val = eval(a->r);
+                
+                // Se entrambi gli elementi sono liste, concatenarle
+                if (left_val.type == 3 && right_val.type == 3) {
+                    v.data.list = concat_lists(left_val.data.list, right_val.data.list);
+                }
+            }
         break;
         case 'F': v = callbuiltin(a); break;
         case 'C': v = calluser(a); break;
@@ -576,7 +659,6 @@ val_t eval(struct ast *a)
     }
     return v;
 }
-
 
 /* define a function */
 void dodef(struct symbol *name, struct symlist *syms, struct ast *func)
@@ -719,13 +801,13 @@ struct list *linked_list_ast(struct ast *args) {
     struct list *current = NULL;
 
     while (args) {
-        // Crea un nuovo nodo della lista
+        
         struct list *new_node = (struct list *)malloc(sizeof(struct list));
         if (!new_node) {
             yyerror("Out of memory");
             exit(1);
         }
-        // Valuta il valore dell'AST corrente
+    
         val_t *value = (val_t *)malloc(sizeof(val_t));
         if (!value) {
             yyerror("Out of memory");
@@ -743,26 +825,22 @@ struct list *linked_list_ast(struct ast *args) {
             value->data.list = result.data.list;
         }
 
-        // Assegna il valore e inizializza il nodo
         new_node->value = value;
         new_node->next = NULL;
 
-        // Aggiungi il nodo alla lista
         if (!head) {
-            head = new_node;  // Primo nodo
+            head = new_node;  // First node is the head
         } else {
-            current->next = new_node;  // Collegamento al successivo
+            current->next = new_node;  
         }
         current = new_node;
 
-        // Passa al prossimo nodo AST (iterazione sulla lista AST)
-        if (args->nodetype == 'L') {  // Nodo lista (sinistra = valore, destra = prossimo elemento)
-            args = args->r;           // Vai al prossimo elemento
-        } else {  // Fine della lista
+        if (args->nodetype == 'L') {  
+            args = args->r;           
+        } else {  
             args = NULL;
         }
-    }
-       
+    }  
     return head;
 }
 
@@ -783,4 +861,36 @@ void print_list(struct list *lst) {
         current = current->next;
     }
     printf(")");
+}
+
+struct list *concat_lists(struct list *l1, struct list *l2) {
+    struct list *new_list = NULL, *current = NULL;
+
+    // Copy the first list
+    while (l1) {
+        struct list *new_node = malloc(sizeof(struct list));
+        new_node->value = l1->value;
+        new_node->next = NULL;
+
+        if (!new_list) new_list = new_node;
+        else current->next = new_node;
+        current = new_node;
+
+        l1 = l1->next;
+    }
+
+    // Copy the second list
+    while (l2) {
+        struct list *new_node = malloc(sizeof(struct list));
+        new_node->value = l2->value;
+        new_node->next = NULL;
+
+        if (!new_list) new_list = new_node;
+        else current->next = new_node;
+        current = new_node;
+
+        l2 = l2->next;
+    }
+
+    return new_list;
 }
