@@ -135,8 +135,8 @@ struct ast *a = malloc(sizeof(struct ast));
         exit(1);
     }
     a->nodetype = 'S'; // String node
-    a->data.s = strdup(s); // Save the string in the node
-    free(s); 
+    a->data.s = strdup(s); // Save the string in the node   
+    
     if (!a->data.s) {
         yyerror("out of space for string");
         exit(1);
@@ -319,7 +319,8 @@ static val_t calluser(struct ast *a) {
 
     return v;
 }
-
+struct list *linked_list_ast(struct ast *args);
+void print_list(struct list *lst);
 /* evaluate an AST */
 val_t eval(struct ast *a)
 {
@@ -375,7 +376,11 @@ val_t eval(struct ast *a)
                     sym->value = 0.0; // Default "dummy" value for strings (or handle differently)
                     sym->string = strdup("");   // Or set to a valid default string value
                     v.type = sym->type;
-                } else {
+                } else if (sym->type == 3) { // Default list initialization
+                    sym->list = NULL; // Empty list
+                    v.type = 3;
+                    v.data.list = NULL;
+                }else {
                     yyerror("Unkown type of variable '%s'", sym->name);
                     return v = (val_t){.type = 1, .data.number = 0.0};
                 }
@@ -385,7 +390,7 @@ val_t eval(struct ast *a)
             
             val_t val = eval(a->l);         // Evaluate the expression on the left-hand side
             // Handle assignment from another variable
-            if (sym->type != val.type) {
+            if (sym->type != val.type && sym->type != 3) {
                 yyerror("Type mismatch: cannot assign type %d to variable '%s' of type %d",
                         val.type, sym->name, sym->type);
                 if (sym->type == 1 || sym->type == 6 || sym->type == 7) {  /* Numeric type*/
@@ -407,6 +412,14 @@ val_t eval(struct ast *a)
                 v.type = sym->type;
                 v.data.string = strdup(sym->string);
             }
+            else if (sym->type == 3) {
+        if (a->l->nodetype == 'L') { // Se il nodo è di tipo lista
+            struct list *lst = linked_list_ast(a->l); // Crea la lista
+            sym->list = lst; // Assegna la lista alla variabile
+            v.type = 3;
+            v.data.list = lst;
+            }
+            } 
             // TODO: add additional types if needed
             break;
         }
@@ -552,8 +565,10 @@ val_t eval(struct ast *a)
         
         /* list of statements */
         case 'L': 
-        if (a->l) eval(a->l);
-        if (a->r) v = eval(a->r);
+            v.type = 3; // Tipo lista
+            v.data.list = linked_list_ast(a->l); // Costruisci la lista
+            if (a->l) eval(a->l);
+            if (a->r) eval(a->r);
         break;
         case 'F': v = callbuiltin(a); break;
         case 'C': v = calluser(a); break;
@@ -561,6 +576,7 @@ val_t eval(struct ast *a)
     }
     return v;
 }
+
 
 /* define a function */
 void dodef(struct symbol *name, struct symlist *syms, struct ast *func)
@@ -575,7 +591,7 @@ void dodef(struct symbol *name, struct symlist *syms, struct ast *func)
 void yyerror(const char *s, ...) {
     va_list ap;
     va_start(ap, s);
-    fprintf(stderr, "%d: Error: ", yylineno);
+    fprintf(stderr, "%d: Error: ", 1);
     vfprintf(stderr, s, ap);
     fprintf(stderr, "\n");
     va_end(ap);
@@ -588,6 +604,11 @@ void print_val(val_t val) {
             break;
         case 2: // String type
             printf("String: %s\n", val.data.string);
+            break;
+        case 3: // List type
+            printf("List: ");
+            print_list(val.data.list);
+            printf("\n");
             break;
         default:
             printf("Unknown type\n");
@@ -611,7 +632,12 @@ void print_ast(struct ast *node, int depth, char *prefix) {
         case 'N': 
             if (node->data.sym->type == 2) { // String variable
                 printf(", Variable: %s, Value (string): %s\n", node->data.sym->name, node->data.sym->string);
-            } else { // Numeric variable
+            } else if (node->data.sym->type == 3) { // List variable
+                printf(", Variable: %s, Value (list): ", node->data.sym->name);
+                print_list(node->data.sym->list);
+                printf("\n");  
+            }
+            else { // Numeric variable
                 printf(", Variable: %s, Value (number): %f\n", node->data.sym->name, node->data.sym->value);
             }
         break;
@@ -687,3 +713,74 @@ int roman_to_int(const char *roman) {
     return result;
 }
 
+/* Create a linked list from an AST structure */
+struct list *linked_list_ast(struct ast *args) {
+    struct list *head = NULL;  // Head of the linked list
+    struct list *current = NULL;
+
+    while (args) {
+        // Crea un nuovo nodo della lista
+        struct list *new_node = (struct list *)malloc(sizeof(struct list));
+        if (!new_node) {
+            yyerror("Out of memory");
+            exit(1);
+        }
+        // Valuta il valore dell'AST corrente
+        val_t *value = (val_t *)malloc(sizeof(val_t));
+        if (!value) {
+            yyerror("Out of memory");
+            exit(1);
+        }
+        val_t result = eval(args);
+        if (result.type == 1) { 
+            value->type = 1;
+            value->data.number = result.data.number;
+        } else if (result.type == 2) { 
+            value->type = 2;
+            value->data.string = strdup(result.data.string);
+        } else if (result.type == 3) { 
+            value->type = 3;
+            value->data.list = result.data.list;
+        }
+
+        // Assegna il valore e inizializza il nodo
+        new_node->value = value;
+        new_node->next = NULL;
+
+        // Aggiungi il nodo alla lista
+        if (!head) {
+            head = new_node;  // Primo nodo
+        } else {
+            current->next = new_node;  // Collegamento al successivo
+        }
+        current = new_node;
+
+        // Passa al prossimo nodo AST (iterazione sulla lista AST)
+        if (args->nodetype == 'L') {  // Nodo lista (sinistra = valore, destra = prossimo elemento)
+            args = args->r;           // Vai al prossimo elemento
+        } else {  // Fine della lista
+            args = NULL;
+        }
+    }
+       
+    return head;
+}
+
+void print_list(struct list *lst) {
+    printf("(");
+    struct list *current = lst;
+    while (current) {
+        if (current->value->type == 3) {
+            print_list(current->value->data.list); 
+        } else if (current->value->type == 1) {
+            printf("%.2f", current->value->data.number);
+        } else if (current->value->type == 2) {
+            printf("\"%s\"", current->value->data.string);
+        }
+        if (current->next) {
+            printf(", ");
+        }
+        current = current->next;
+    }
+    printf(")");
+}

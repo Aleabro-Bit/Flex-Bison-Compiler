@@ -27,6 +27,7 @@ struct symbol { /* a variable name */
  struct symlist *syms; /* list of dummy args */
  int type;
  char *string;
+ struct list *list;
 };
 
 struct symbol *lookup(char*);

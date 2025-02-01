@@ -87,6 +87,7 @@ declare: DATA_TYPE ID init {
      struct ast *assign = newasgn(sym, $3);
      $$ = newast('L', declare, assign);
     }
+
     ;
 init: ASSIGN expression { $$ = $2; }
     | { $$ = NULL; }

@@ -1515,7 +1515,7 @@ yyreduce:
     {
   case 3: /* START: START statements EOL  */
 #line 53 "parser.y"
-                            { val_t result = eval((yyvsp[-1].a)); print_ast((yyvsp[-1].a), 0, " ");  print_val(result);  }
+                           {(yyval.a) = newast('L', (yyvsp[-2].a), (yyvsp[-1].a)); val_t result = eval((yyvsp[-1].a)); print_ast((yyvsp[-1].a), 0, " ");  print_val(result);  }
 #line 1520 "parser.tab.c"
     break;
 

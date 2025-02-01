@@ -72,6 +72,7 @@ struct symbol *lookup(char* sym)
             sp->string = NULL;
             sp->func = NULL;
             sp->syms = NULL;
+            sp->list = NULL;
 
             symtab_count++;
             return sp; /* new entry */
