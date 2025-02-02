@@ -48,7 +48,7 @@ int yylex();
 %%
 
 START: /* nothing */
-    | START stmts EOL {$$ = newast('L', $1, $2); val_t result = eval($2); print_ast($2, 0, " ");  print_all_scopes();  }
+    | START stmts EOL {$$ = newast('L', $1, $2); val_t result = eval($2); print_ast($2, 0, " ");    }
     | START ufunction EOL
     | START error EOL { yyerrok; printf("> "); }
     | START EOL  { printf("> "); }

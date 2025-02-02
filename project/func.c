@@ -67,6 +67,7 @@ val_t *get(struct list *head, int index) {
     return NULL;  // Return null if value is out of bounds
 }
 
+/*
 val_t *get2D(struct list *head, int row, int col) {
     int i = 0;
     while (head) { // Iteriamo sulle righe (lista esterna)
@@ -78,7 +79,7 @@ val_t *get2D(struct list *head, int row, int col) {
         i++;
     }
     return NULL; // Se gli indici sono fuori dai limiti
-}
+} */
 
 int roman_to_int(const char *roman) {
     int result = 0;
@@ -108,16 +109,15 @@ int roman_to_int(const char *roman) {
     return result;
 }
 
-val_t split(struct ast *a) {
-    val_t v = eval(a->l); // Valutiamo l'argomento
+val_t split(val_t v) { 
 
-    if (v.type != 2) { // Controllo: l'argomento deve essere una stringa
+    if (v.type != 2) { 
         yyerror("split() expects a string");
-        return (val_t){.type = 3, .data.list = NULL}; // Ritorna una lista vuota in caso di errore
+        return (val_t){.type = 3, .data.list = NULL}; 
     }
 
-    char *input = strdup(v.data.string); // Copia della stringa per strtok
-    char *token = strtok(input, " "); // Dividiamo la stringa in parole
+    char *input = strdup(v.data.string); 
+    char *token = strtok(input, " "); // Divides the string in words
     struct list *head = NULL;
     struct list *current = NULL;
 
@@ -134,25 +134,25 @@ val_t split(struct ast *a) {
             exit(1);
         }
 
-        value->type = 2; // Tipo stringa
-        value->data.string = strdup(token); // Copiamo la parola
+        value->type = 2; 
+        value->data.string = strdup(token); 
 
         new_node->value = value;
         new_node->next = NULL;
 
         if (!head) {
-            head = new_node; // Primo nodo
+            head = new_node; 
         } else {
             current->next = new_node;
         }
         current = new_node;
 
-        token = strtok(NULL, " "); // Passiamo al prossimo token
+        token = strtok(NULL, " ");
     }
 
-    free(input); // Libera la copia della stringa
+    free(input); 
 
-    return (val_t){.type = 3, .data.list = head}; // Restituiamo direttamente la lista
+    return (val_t){.type = 3, .data.list = head}; 
 }
 /* Create a linked list from an AST structure */
 struct list *linked_list_ast(struct ast *args) {

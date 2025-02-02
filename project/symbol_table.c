@@ -119,49 +119,68 @@ void symlistfree(struct symlist *sl)
 }
 
 /* Scope */
-/* Inizializza un nuovo scope */
-#define MAX_SCOPE_DEPTH 128  // Profondità massima dello scope
+
+#define MAX_SCOPE_DEPTH 128  
 
 scope_t *scope_stack[MAX_SCOPE_DEPTH];
-int scope_top = -1;  // Indice dell'ultimo scope attivo
+int scope_top = -1;  // Last active scope
 
 void push_scope() {
     if (scope_top >= MAX_SCOPE_DEPTH - 1) {
-        yyerror("Troppi scope annidati!");
+        yyerror("Scope stack overflow");
         exit(1);
     }
     scope_t *new_scope = malloc(sizeof(scope_t));
     if (!new_scope) {
-        yyerror("Errore di allocazione dello scope!");
+        yyerror("Error in scope allocation");
         exit(1);
     }
     new_scope->symbols = NULL;
     new_scope->symbol_count = 0;
     scope_stack[++scope_top] = new_scope;
 
-    printf("Scope creato! Livello: %d\n", scope_top);
+    printf("Scope created, level: %d\n", scope_top);
 }
 
 void pop_scope() {
     if (scope_top < 0) {
-        yyerror("Errore: pop su uno scope vuoto!");
+        yyerror("Error: pop on empty scope stack");
         return;
     }
     free(scope_stack[scope_top--]);
+}
+
+void scope_add_variable(char *name, double value) {
+    if (scope_top < 0) {
+        yyerror("Error: no scope to add variable");
+        return;
+    }
+    struct symbol *sym = lookup(name);
+    sym->value = value;
+}
+
+/* Looks for a variable in the current scope or fathers scope */
+double scope_get_variable(char *name) {
+    for (int i = scope_top; i >= 0; i--) {
+        struct symbol *sym = lookup(name);
+        if (sym) return sym->value;
+    }
+    yyerror("Error: variable not found in any scope");
+    return 0;
 }
 
 
 void print_all_scopes() {
     printf("\n=== Print all scopes ===\n");
     for (int i = scope_top; i >= 0; i--) {
-        printf("Scope livello %d:\n", i);
+        printf("Scope level %d:\n", i);
         for (int j = 0; j < scope_stack[i]->symbol_count; j++) {
             struct symbol *sym = scope_stack[i]->symbols[j];
             printf("  - Nome: %s, Valore: %.2f, Tipo: %d\n", 
                    sym->name, sym->value, sym->type);
         }
         if (scope_stack[i]->symbol_count == 0) {
-            printf("  (Vuoto)\n");
+            printf("  (empty)\n");
         }
         printf("-----------------------------\n");
     }

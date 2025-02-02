@@ -73,7 +73,6 @@ ROM 0(M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*))
 "get"           { yylval.fn = B_get; return FUNC;}
 "input"         { yylval.fn = B_input; return FUNC;}
 "split"         { yylval.fn = B_split; return FUNC;}
-"get2D"         { yylval.fn = B_get2D; return FUNC;}
 "count_char"    { yylval.fn = B_count_char; return FUNC;}
 
 

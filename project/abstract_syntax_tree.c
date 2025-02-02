@@ -245,7 +245,7 @@ static val_t callbuiltin(struct ast *a)
                 yyerror("get() expects a list and an index");
             }
             return result;
-        case B_get2D:
+        /*case B_get2D:
         if (v.type == 3 && a->l->r && a->l->r->r) { 
             val_t index_row = eval(a->l->r);
             val_t index_col = eval(a->l->r->r);
@@ -265,6 +265,7 @@ static val_t callbuiltin(struct ast *a)
             yyerror("get2D() expects a 2D list and two indices");
         }
         return (val_t){.type = 1, .data.number = 0.0}; // Default return
+        */
         case B_input: {
             char buffer[1024]; // Buffer for input of up to 1024 characters
 
@@ -301,7 +302,7 @@ static val_t callbuiltin(struct ast *a)
         case B_split: {
             if (v.type == 2) {
                 result.type = 3;
-                result = split(a);
+                result = split(v);
             } else {
                 yyerror("split() expects a string");
             }
@@ -487,10 +488,15 @@ val_t eval(struct ast *a)
                 v.data.string = strdup(sym->string);
             }
                 else if (sym->type == 3) {
+                if (val.type == 3 && val.data.list) { //list already declared
+                    sym->list = val.data.list; 
+                }
+                else {
                 struct list *lst = linked_list_ast(a->l); // Create a list from the AST
                 sym->list = lst; 
                 v.type = sym->type;
                 v.data.list = lst;
+                }
                 } 
             break;
         }

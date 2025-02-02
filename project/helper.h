@@ -50,7 +50,7 @@ enum bifs { /* built-in functions */
     B_get,
     B_input,
     B_split,
-    B_get2D,
+   /* B_get2D, */
     B_count_char
     
 };
@@ -107,7 +107,7 @@ int roman_to_int(const char *roman);
 void print_val(val_t val);
 double factorial(double n);
 void print_func(struct ast *arg);
-val_t split(struct ast *a);
+val_t split(val_t v);
 
 /* Linked List Functions*/
 void print_list(struct list *lst);
@@ -126,8 +126,6 @@ typedef struct scope {
 
 void push_scope();
 void pop_scope();
-struct symbol *lookup_variable(const char *name);
-void assign_variable(struct symbol *sym, val_t value);
 void print_all_scopes();
 
 
