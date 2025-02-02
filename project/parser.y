@@ -4,7 +4,7 @@
 #include <string.h>
 #include <math.h>
 #include "helper.h"
-/*TODO: IMPLEMENT SOME BUILT IN FUNCTIONS, RETURN, SCOPE SISTEMARE IL PARSER */
+/*TODO: RETURN, SCOPE SISTEMARE IL PARSER */
 int yydebug = 0;
 extern FILE *yyin;
 extern int yylineno;
@@ -60,13 +60,19 @@ stmts:
         $$ = newast('L', $1, $3); 
         } // expression or statement list
     | stmt ';' { $$ = $1; }
+    | flow stmts {  
+        if ($2 == NULL) 
+            $$ = $1;
+        else 
+            $$ = newast('L', $1, $2);
+    }
+    | flow  { $$ = $1; }
     ;
 stmt:
      declare { $$ = $1; }
     | assignment { $$ = $1; } 
     | funcall { $$ = $1; }
-    | return { $$ = $1; }
-    | flow  { $$ = $1; }
+    | return { $$ = $1; }  
     | expr { $$ = $1; }
     ;
 flow: 
@@ -114,7 +120,7 @@ condition: expr CMP expr { $$ = newcmp($2, $1, $3); }
     | condition OR condition { $$ = newast('O', $1, $3); }
     | NOT condition { $$ = newast('!', $2, NULL); }
     | '(' condition ')' { $$ = $2; } 
-    | expr {}    
+    | expr { $$ = $1; }    
     ;
 expr: expr PLUS expr { $$ = newast('+', $1, $3); }
     | expr MINUS expr { $$ = newast('-', $1, $3); }

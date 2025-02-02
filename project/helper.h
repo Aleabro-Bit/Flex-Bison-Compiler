@@ -49,7 +49,9 @@ enum bifs { /* built-in functions */
     B_size,  
     B_get,
     B_input,
-    B_split
+    B_split,
+    B_get2D,
+    B_count_char
     
 };
 
@@ -105,16 +107,18 @@ int roman_to_int(const char *roman);
 void print_val(val_t val);
 double factorial(double n);
 void print_func(struct ast *arg);
+val_t split(struct ast *a);
 
 /* Linked List Functions*/
 void print_list(struct list *lst);
 struct list *linked_list_ast(struct ast *args);
 int list_length(struct list *head);
 val_t *get(struct list *head, int index);
+val_t *get2D(struct list *head, int row, int col);
 struct list *concat_lists(struct list *head1, struct list *head2);
+val_t count_char(val_t v);
 
 /* Scope*/
-/* Struttura dello Scope */
 typedef struct scope {
     struct symbol **symbols;  // Array di puntatori ai simboli locali
     int symbol_count;

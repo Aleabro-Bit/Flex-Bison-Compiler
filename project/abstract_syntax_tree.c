@@ -245,38 +245,75 @@ static val_t callbuiltin(struct ast *a)
                 yyerror("get() expects a list and an index");
             }
             return result;
-        case B_input: {
-            char buffer[1024]; // Buffer per l'input
+        case B_get2D:
+        if (v.type == 3 && a->l->r && a->l->r->r) { 
+            val_t index_row = eval(a->l->r);
+            val_t index_col = eval(a->l->r->r);
 
-        // Stampare il prompt se disponibile
+            if (index_row.type == 1 && index_col.type == 1) { 
+                val_t list_node = eval(a->l->l);
+                val_t *element = get2D(list_node.data.list, (int)index_row.data.number, (int)index_col.data.number);
+                if (element) {
+                    return *element; 
+                } else {
+                    yyerror("Index out of bounds");
+                }
+            } else {
+                yyerror("get2D() expects two numeric indices");
+            }
+        } else {
+            yyerror("get2D() expects a 2D list and two indices");
+        }
+        return (val_t){.type = 1, .data.number = 0.0}; // Default return
+        case B_input: {
+            char buffer[1024]; // Buffer for input of up to 1024 characters
+
+        // Print the prompt
         if (v.type == 2 && v.data.string) {
             printf("%s: ", v.data.string);
         } else {
             printf("Input: ");
         }
 
-        // Lettura dell'input
+        // Read the input
         if (fgets(buffer, sizeof(buffer), stdin) == NULL) {
             yyerror("Error reading input");
-            return (val_t){.type = 2, .data.string = strdup("")}; // Ritorna stringa vuota in caso di errore
+            return (val_t){.type = 2, .data.string = strdup("")}; 
         }
 
-        // Rimuovere il carattere di newline
+        // Remove newline character
         buffer[strcspn(buffer, "\n")] = 0;
 
-        // Tentativo di conversione in numero
+        // Conversion in number
         char *endptr;
         double num = strtod(buffer, &endptr);
 
-        if (*endptr == '\0') { // Se l'intero buffer è stato convertito in numero
+        if (*endptr == '\0') { // If the buffer in converted into a number
             result.type = 1;
             result.data.number = num;
-        } else { // Altrimenti è una stringa
+        } else { // else assume it's a string
             result.type = 2;
             result.data.string = strdup(buffer);
         }
 
         return result;
+        }
+        case B_split: {
+            if (v.type == 2) {
+                result.type = 3;
+                result = split(a);
+            } else {
+                yyerror("split() expects a string");
+            }
+            return result;
+        }
+        case B_count_char:
+        if (v.type == 2) { 
+            result = count_char(v);
+            return result;
+        } else {
+            yyerror("count() expects a string");
+            return (val_t){.type = 1, .data.number = 0}; 
         }
 
         default:

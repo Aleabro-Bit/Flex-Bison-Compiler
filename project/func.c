@@ -67,6 +67,19 @@ val_t *get(struct list *head, int index) {
     return NULL;  // Return null if value is out of bounds
 }
 
+val_t *get2D(struct list *head, int row, int col) {
+    int i = 0;
+    while (head) { // Iteriamo sulle righe (lista esterna)
+        if (i == row) { // Se siamo nella riga giusta
+            struct list *inner_list = head->value->data.list; // Lista interna (colonne)
+            return get(inner_list, col); // Usiamo get() per ottenere la colonna
+        }
+        head = head->next;
+        i++;
+    }
+    return NULL; // Se gli indici sono fuori dai limiti
+}
+
 int roman_to_int(const char *roman) {
     int result = 0;
     while (*roman) {
@@ -95,6 +108,52 @@ int roman_to_int(const char *roman) {
     return result;
 }
 
+val_t split(struct ast *a) {
+    val_t v = eval(a->l); // Valutiamo l'argomento
+
+    if (v.type != 2) { // Controllo: l'argomento deve essere una stringa
+        yyerror("split() expects a string");
+        return (val_t){.type = 3, .data.list = NULL}; // Ritorna una lista vuota in caso di errore
+    }
+
+    char *input = strdup(v.data.string); // Copia della stringa per strtok
+    char *token = strtok(input, " "); // Dividiamo la stringa in parole
+    struct list *head = NULL;
+    struct list *current = NULL;
+
+    while (token != NULL) {
+        struct list *new_node = (struct list *)malloc(sizeof(struct list));
+        if (!new_node) {
+            yyerror("Out of memory");
+            exit(1);
+        }
+
+        val_t *value = (val_t *)malloc(sizeof(val_t));
+        if (!value) {
+            yyerror("Out of memory");
+            exit(1);
+        }
+
+        value->type = 2; // Tipo stringa
+        value->data.string = strdup(token); // Copiamo la parola
+
+        new_node->value = value;
+        new_node->next = NULL;
+
+        if (!head) {
+            head = new_node; // Primo nodo
+        } else {
+            current->next = new_node;
+        }
+        current = new_node;
+
+        token = strtok(NULL, " "); // Passiamo al prossimo token
+    }
+
+    free(input); // Libera la copia della stringa
+
+    return (val_t){.type = 3, .data.list = head}; // Restituiamo direttamente la lista
+}
 /* Create a linked list from an AST structure */
 struct list *linked_list_ast(struct ast *args) {
     struct list *head = NULL;  // Head of the linked list
@@ -195,3 +254,16 @@ struct list *concat_lists(struct list *l1, struct list *l2) {
     return new_list;
 }
 
+val_t count_char(val_t v) {
+    val_t result;
+    result.type = 1; 
+
+    if (v.type == 2 && v.data.string) { 
+        result.data.number = strlen(v.data.string); 
+    } else {
+        yyerror("char_count() expects a string");
+        result.data.number = 0; 
+    }
+    
+    return result;
+}

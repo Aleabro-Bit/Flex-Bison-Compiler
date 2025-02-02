@@ -4,6 +4,7 @@ State 10 conflicts: 2 shift/reduce
 State 11 conflicts: 2 shift/reduce
 State 19 conflicts: 2 shift/reduce
 State 20 conflicts: 1 shift/reduce
+State 23 conflicts: 1 shift/reduce
 State 34 conflicts: 1 reduce/reduce
 State 37 conflicts: 1 shift/reduce
 State 38 conflicts: 1 shift/reduce
@@ -11,32 +12,32 @@ State 39 conflicts: 1 shift/reduce
 State 46 conflicts: 1 shift/reduce
 State 48 conflicts: 1 shift/reduce
 State 49 conflicts: 1 shift/reduce
-State 55 conflicts: 1 shift/reduce, 1 reduce/reduce
-State 56 conflicts: 2 shift/reduce
+State 55 conflicts: 1 shift/reduce
 State 57 conflicts: 2 shift/reduce
 State 58 conflicts: 2 shift/reduce
 State 59 conflicts: 2 shift/reduce
 State 60 conflicts: 2 shift/reduce
-State 63 conflicts: 1 shift/reduce
+State 61 conflicts: 2 shift/reduce
 State 64 conflicts: 1 shift/reduce
-State 73 conflicts: 1 shift/reduce
-State 77 conflicts: 1 shift/reduce
-State 86 conflicts: 1 shift/reduce
-State 87 conflicts: 2 shift/reduce
-State 89 conflicts: 1 shift/reduce
+State 65 conflicts: 1 shift/reduce
+State 74 conflicts: 1 shift/reduce
+State 78 conflicts: 1 shift/reduce
+State 87 conflicts: 1 shift/reduce
+State 88 conflicts: 2 shift/reduce
 State 90 conflicts: 1 shift/reduce
 State 91 conflicts: 1 shift/reduce
-State 93 conflicts: 1 shift/reduce
-State 105 conflicts: 2 shift/reduce
+State 92 conflicts: 1 shift/reduce
+State 94 conflicts: 1 shift/reduce
 State 106 conflicts: 2 shift/reduce
-State 107 conflicts: 1 shift/reduce
-State 112 conflicts: 1 shift/reduce
-State 114 conflicts: 1 shift/reduce
-State 116 conflicts: 1 shift/reduce
+State 107 conflicts: 2 shift/reduce
+State 108 conflicts: 1 shift/reduce
+State 113 conflicts: 1 shift/reduce
+State 115 conflicts: 1 shift/reduce
 State 117 conflicts: 1 shift/reduce
-State 120 conflicts: 1 shift/reduce
-State 131 conflicts: 1 shift/reduce
+State 121 conflicts: 1 shift/reduce
+State 125 conflicts: 1 shift/reduce
 State 132 conflicts: 1 shift/reduce
+State 138 conflicts: 1 shift/reduce
 
 
 Grammar
@@ -51,119 +52,120 @@ Grammar
 
     6 stmts: stmt ';' stmts
     7      | stmt ';'
+    8      | flow stmts
+    9      | flow
 
-    8 stmt: declare
-    9     | assignment
-   10     | funcall
-   11     | return
-   12     | flow
-   13     | expr
+   10 stmt: declare
+   11     | assignment
+   12     | funcall
+   13     | return
+   14     | expr
 
-   14 flow: whether
-   15     | when
-   16     | from
+   15 flow: whether
+   16     | when
+   17     | from
 
-   17 declare: DATA_TYPE ID init
+   18 declare: DATA_TYPE ID init
 
-   18 init: ASSIGN expr
-   19     | ε
+   19 init: ASSIGN expr
+   20     | ε
 
-   20 assignment: ID ASSIGN expr
+   21 assignment: ID ASSIGN expr
 
-   21 whether: WHETHER '[' condition ']' THEN ':' stmts
-   22        | WHETHER '[' condition ']' THEN ':' stmts OTHERWISE ':' stmts
+   22 whether: WHETHER '[' condition ']' THEN ':' '{' stmts '}'
+   23        | WHETHER '[' condition ']' THEN ':' '{' stmts '}' OTHERWISE ':' '{' stmts '}'
 
-   23 when: WHEN '[' condition ']' '{' stmts '}'
-   24     | WHEN '{' stmts '}' UNTIL '[' condition ']'
+   24 when: WHEN '[' condition ']' '{' stmts '}'
+   25     | WHEN '{' stmts '}' UNTIL '[' condition ']'
 
-   25 from: FROM '[' declare TO expr STEP expr ']' '{' stmts '}'
+   26 from: FROM '[' declare TO expr STEP expr ']' '{' stmts '}'
 
-   26 condition: expr CMP expr
-   27          | condition AND condition
-   28          | condition OR condition
-   29          | NOT condition
-   30          | '(' condition ')'
-   31          | expr
+   27 condition: expr CMP expr
+   28          | condition AND condition
+   29          | condition OR condition
+   30          | NOT condition
+   31          | '(' condition ')'
+   32          | expr
 
-   32 expr: expr PLUS expr
-   33     | expr MINUS expr
-   34     | expr MUL expr
-   35     | expr DIV expr
-   36     | expr POW expr
-   37     | ABS expr ABS
-   38     | MINUS expr
-   39     | '(' expr ')'
-   40     | value
-   41     | funcall
+   33 expr: expr PLUS expr
+   34     | expr MINUS expr
+   35     | expr MUL expr
+   36     | expr DIV expr
+   37     | expr POW expr
+   38     | ABS expr ABS
+   39     | MINUS expr
+   40     | '(' expr ')'
+   41     | value
+   42     | funcall
 
-   42 value: ε
-   43      | NUM
-   44      | BINARY
-   45      | ROMAN
-   46      | ID
-   47      | STR
-   48      | list
+   43 value: ε
+   44      | NUM
+   45      | BINARY
+   46      | ROMAN
+   47      | ID
+   48      | STR
+   49      | list
 
-   49 list: '[' ']'
-   50     | '[' explist ']'
+   50 list: '[' ']'
+   51     | '[' explist ']'
 
-   51 explist: expr
-   52        | expr ',' explist
+   52 explist: expr
+   53        | expr ',' explist
 
-   53 symlist: ID
-   54        | ID ',' symlist
+   54 symlist: ID
+   55        | ID ',' symlist
 
-   55 return: RETURN expr ';'
+   56 return: RETURN expr ';'
 
-   56 ufunction: DEFINE ID '(' symlist ')' '{' stmts '}'
-   57          | DEFINE ID '(' ')' '{' stmts '}'
+   57 ufunction: DEFINE ID '(' symlist ')' '{' stmts '}'
+   58          | DEFINE ID '(' ')' '{' stmts '}'
 
-   58 funcall: ID '(' explist ')'
-   59        | FUNC '(' explist ')'
+   59 funcall: ID '(' explist ')'
+   60        | FUNC '(' explist ')'
 
 
 Terminals, with rules where they appear
 
     $end (0) 0
-    '(' (40) 30 39 56 57 58 59
-    ')' (41) 30 39 56 57 58 59
-    ',' (44) 52 54
-    ':' (58) 21 22
-    ';' (59) 6 7 55
-    '[' (91) 21 22 23 24 25 49 50
-    ']' (93) 21 22 23 24 25 49 50
-    '{' (123) 23 24 25 56 57
-    '}' (125) 23 24 25 56 57
+    '(' (40) 31 40 57 58 59 60
+    ')' (41) 31 40 57 58 59 60
+    ',' (44) 53 55
+    ':' (58) 22 23
+    ';' (59) 6 7 56
+    '[' (91) 22 23 24 25 26 50 51
+    ']' (93) 22 23 24 25 26 50 51
+    '{' (123) 22 23 24 25 26 57 58
+    '}' (125) 22 23 24 25 26 57 58
     error (256) 4
-    STEP (258) 25
-    TO (259) 25
-    FROM (260) 25
-    WHEN (261) 23 24
-    OTHERWISE (262) 22
-    WHETHER (263) 21 22
-    RETURN (264) 55
-    DEFINE (265) 56 57
-    UNTIL (266) 24
+    STEP (258) 26
+    TO (259) 26
+    FROM (260) 26
+    WHEN (261) 24 25
+    OTHERWISE (262) 23
+    WHETHER (263) 22 23
+    RETURN (264) 56
+    DEFINE (265) 57 58
+    UNTIL (266) 25
     EOL (267) 2 3 4 5
-    THEN (268) 21 22
-    AND (269) 27
-    OR (270) 28
-    NOT (271) 29
-    PLUS <op> (272) 32
-    MINUS <op> (273) 33 38
-    MUL <op> (274) 34
-    DIV <op> (275) 35
-    POW <op> (276) 36
-    ASSIGN <op> (277) 18 20
-    ABS <op> (278) 37
-    NUM <num> (279) 43
-    BINARY <num> (280) 44
-    ROMAN <num> (281) 45
-    STR <st> (282) 47
-    FUNC <fn> (283) 59
-    DATA_TYPE <dt> (284) 17
-    ID <s> (285) 17 20 46 53 54 56 57 58
-    CMP <fn> (286) 26
+    THEN (268) 22 23
+    AND (269) 28
+    OR (270) 29
+    NOT (271) 30
+    PLUS <op> (272) 33
+    MINUS <op> (273) 34 39
+    MUL <op> (274) 35
+    DIV <op> (275) 36
+    POW <op> (276) 37
+    ASSIGN <op> (277) 19 21
+    ABS <op> (278) 38
+    NUM <num> (279) 44
+    BINARY <num> (280) 45
+    ROMAN <num> (281) 46
+    STR <st> (282) 48
+    FUNC <fn> (283) 60
+    DATA_TYPE <dt> (284) 18
+    ID <s> (285) 18 21 47 54 55 57 58 59
+    CMP <fn> (286) 27
     UMINUS (287)
 
 
@@ -175,59 +177,59 @@ Nonterminals, with rules where they appear
         on left: 1 2 3 4 5
         on right: 0 2 3 4 5
     stmts <a> (44)
-        on left: 6 7
-        on right: 2 6 21 22 23 24 25 56 57
+        on left: 6 7 8 9
+        on right: 2 6 8 22 23 24 25 26 57 58
     stmt <a> (45)
-        on left: 8 9 10 11 12 13
+        on left: 10 11 12 13 14
         on right: 6 7
     flow <a> (46)
-        on left: 14 15 16
-        on right: 12
+        on left: 15 16 17
+        on right: 8 9
     declare <a> (47)
-        on left: 17
-        on right: 8 25
+        on left: 18
+        on right: 10 26
     init <a> (48)
-        on left: 18 19
-        on right: 17
+        on left: 19 20
+        on right: 18
     assignment <a> (49)
-        on left: 20
-        on right: 9
-    whether <a> (50)
-        on left: 21 22
-        on right: 14
-    when <a> (51)
-        on left: 23 24
-        on right: 15
-    from <a> (52)
-        on left: 25
-        on right: 16
-    condition <a> (53)
-        on left: 26 27 28 29 30 31
-        on right: 21 22 23 24 27 28 29 30
-    expr <a> (54)
-        on left: 32 33 34 35 36 37 38 39 40 41
-        on right: 13 18 20 25 26 31 32 33 34 35 36 37 38 39 51 52 55
-    value <a> (55)
-        on left: 42 43 44 45 46 47 48
-        on right: 40
-    list <a> (56)
-        on left: 49 50
-        on right: 48
-    explist <a> (57)
-        on left: 51 52
-        on right: 50 52 58 59
-    symlist <sl> (58)
-        on left: 53 54
-        on right: 54 56
-    return <a> (59)
-        on left: 55
+        on left: 21
         on right: 11
+    whether <a> (50)
+        on left: 22 23
+        on right: 15
+    when <a> (51)
+        on left: 24 25
+        on right: 16
+    from <a> (52)
+        on left: 26
+        on right: 17
+    condition <a> (53)
+        on left: 27 28 29 30 31 32
+        on right: 22 23 24 25 28 29 30 31
+    expr <a> (54)
+        on left: 33 34 35 36 37 38 39 40 41 42
+        on right: 14 19 21 26 27 32 33 34 35 36 37 38 39 40 52 53 56
+    value <a> (55)
+        on left: 43 44 45 46 47 48 49
+        on right: 41
+    list <a> (56)
+        on left: 50 51
+        on right: 49
+    explist <a> (57)
+        on left: 52 53
+        on right: 51 53 59 60
+    symlist <sl> (58)
+        on left: 54 55
+        on right: 55 57
+    return <a> (59)
+        on left: 56
+        on right: 13
     ufunction <a> (60)
-        on left: 56 57
+        on left: 57 58
         on right: 3
     funcall <a> (61)
-        on left: 58 59
-        on right: 10 41
+        on left: 59 60
+        on right: 12 42
 
 
 State 0
@@ -267,12 +269,12 @@ State 1
     '['        shift, and go to state 19
     '('        shift, and go to state 20
 
-    PLUS   reduce using rule 42 (value)
-    MINUS  [reduce using rule 42 (value)]
-    MUL    reduce using rule 42 (value)
-    DIV    reduce using rule 42 (value)
-    POW    reduce using rule 42 (value)
-    ';'    reduce using rule 42 (value)
+    PLUS   reduce using rule 43 (value)
+    MINUS  [reduce using rule 43 (value)]
+    MUL    reduce using rule 43 (value)
+    DIV    reduce using rule 43 (value)
+    POW    reduce using rule 43 (value)
+    ';'    reduce using rule 43 (value)
 
     stmts       go to state 21
     stmt        go to state 22
@@ -306,15 +308,15 @@ State 3
 
 State 4
 
-   25 from: FROM • '[' declare TO expr STEP expr ']' '{' stmts '}'
+   26 from: FROM • '[' declare TO expr STEP expr ']' '{' stmts '}'
 
     '['  shift, and go to state 36
 
 
 State 5
 
-   23 when: WHEN • '[' condition ']' '{' stmts '}'
-   24     | WHEN • '{' stmts '}' UNTIL '[' condition ']'
+   24 when: WHEN • '[' condition ']' '{' stmts '}'
+   25     | WHEN • '{' stmts '}' UNTIL '[' condition ']'
 
     '['  shift, and go to state 37
     '{'  shift, and go to state 38
@@ -322,15 +324,15 @@ State 5
 
 State 6
 
-   21 whether: WHETHER • '[' condition ']' THEN ':' stmts
-   22        | WHETHER • '[' condition ']' THEN ':' stmts OTHERWISE ':' stmts
+   22 whether: WHETHER • '[' condition ']' THEN ':' '{' stmts '}'
+   23        | WHETHER • '[' condition ']' THEN ':' '{' stmts '}' OTHERWISE ':' '{' stmts '}'
 
     '['  shift, and go to state 39
 
 
 State 7
 
-   55 return: RETURN • expr ';'
+   56 return: RETURN • expr ';'
 
     MINUS   shift, and go to state 10
     ABS     shift, and go to state 11
@@ -343,8 +345,8 @@ State 7
     '['     shift, and go to state 19
     '('     shift, and go to state 20
 
-    MINUS     [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
+    MINUS     [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
 
     expr     go to state 41
     value    go to state 30
@@ -354,8 +356,8 @@ State 7
 
 State 8
 
-   56 ufunction: DEFINE • ID '(' symlist ')' '{' stmts '}'
-   57          | DEFINE • ID '(' ')' '{' stmts '}'
+   57 ufunction: DEFINE • ID '(' symlist ')' '{' stmts '}'
+   58          | DEFINE • ID '(' ')' '{' stmts '}'
 
     ID  shift, and go to state 43
 
@@ -369,7 +371,7 @@ State 9
 
 State 10
 
-   38 expr: MINUS • expr
+   39 expr: MINUS • expr
 
     MINUS   shift, and go to state 10
     ABS     shift, and go to state 11
@@ -382,9 +384,9 @@ State 10
     '['     shift, and go to state 19
     '('     shift, and go to state 20
 
-    MINUS     [reduce using rule 42 (value)]
-    ABS       [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
+    MINUS     [reduce using rule 43 (value)]
+    ABS       [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
 
     expr     go to state 44
     value    go to state 30
@@ -394,7 +396,7 @@ State 10
 
 State 11
 
-   37 expr: ABS • expr ABS
+   38 expr: ABS • expr ABS
 
     MINUS   shift, and go to state 10
     ABS     shift, and go to state 11
@@ -407,9 +409,9 @@ State 11
     '['     shift, and go to state 19
     '('     shift, and go to state 20
 
-    MINUS     [reduce using rule 42 (value)]
-    ABS       [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
+    MINUS     [reduce using rule 43 (value)]
+    ABS       [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
 
     expr     go to state 45
     value    go to state 30
@@ -419,62 +421,62 @@ State 11
 
 State 12
 
-   43 value: NUM •
-
-    $default  reduce using rule 43 (value)
-
-
-State 13
-
-   44 value: BINARY •
+   44 value: NUM •
 
     $default  reduce using rule 44 (value)
 
 
-State 14
+State 13
 
-   45 value: ROMAN •
+   45 value: BINARY •
 
     $default  reduce using rule 45 (value)
 
 
+State 14
+
+   46 value: ROMAN •
+
+    $default  reduce using rule 46 (value)
+
+
 State 15
 
-   47 value: STR •
+   48 value: STR •
 
-    $default  reduce using rule 47 (value)
+    $default  reduce using rule 48 (value)
 
 
 State 16
 
-   59 funcall: FUNC • '(' explist ')'
+   60 funcall: FUNC • '(' explist ')'
 
     '('  shift, and go to state 46
 
 
 State 17
 
-   17 declare: DATA_TYPE • ID init
+   18 declare: DATA_TYPE • ID init
 
     ID  shift, and go to state 47
 
 
 State 18
 
-   20 assignment: ID • ASSIGN expr
-   46 value: ID •
-   58 funcall: ID • '(' explist ')'
+   21 assignment: ID • ASSIGN expr
+   47 value: ID •
+   59 funcall: ID • '(' explist ')'
 
     ASSIGN  shift, and go to state 48
     '('     shift, and go to state 49
 
-    $default  reduce using rule 46 (value)
+    $default  reduce using rule 47 (value)
 
 
 State 19
 
-   49 list: '[' • ']'
-   50     | '[' • explist ']'
+   50 list: '[' • ']'
+   51     | '[' • explist ']'
 
     MINUS   shift, and go to state 10
     ABS     shift, and go to state 11
@@ -488,9 +490,9 @@ State 19
     ']'     shift, and go to state 50
     '('     shift, and go to state 20
 
-    MINUS     [reduce using rule 42 (value)]
-    ']'       [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
+    MINUS     [reduce using rule 43 (value)]
+    ']'       [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
 
     expr     go to state 51
     value    go to state 30
@@ -501,7 +503,7 @@ State 19
 
 State 20
 
-   39 expr: '(' • expr ')'
+   40 expr: '(' • expr ')'
 
     MINUS   shift, and go to state 10
     ABS     shift, and go to state 11
@@ -514,8 +516,8 @@ State 20
     '['     shift, and go to state 19
     '('     shift, and go to state 20
 
-    MINUS     [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
+    MINUS     [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
 
     expr     go to state 53
     value    go to state 30
@@ -540,147 +542,8 @@ State 22
 
 State 23
 
-   12 stmt: flow •
-
-    $default  reduce using rule 12 (stmt)
-
-
-State 24
-
-    8 stmt: declare •
-
-    $default  reduce using rule 8 (stmt)
-
-
-State 25
-
-    9 stmt: assignment •
-
-    $default  reduce using rule 9 (stmt)
-
-
-State 26
-
-   14 flow: whether •
-
-    $default  reduce using rule 14 (flow)
-
-
-State 27
-
-   15 flow: when •
-
-    $default  reduce using rule 15 (flow)
-
-
-State 28
-
-   16 flow: from •
-
-    $default  reduce using rule 16 (flow)
-
-
-State 29
-
-   13 stmt: expr •
-   32 expr: expr • PLUS expr
-   33     | expr • MINUS expr
-   34     | expr • MUL expr
-   35     | expr • DIV expr
-   36     | expr • POW expr
-
-    PLUS   shift, and go to state 56
-    MINUS  shift, and go to state 57
-    MUL    shift, and go to state 58
-    DIV    shift, and go to state 59
-    POW    shift, and go to state 60
-
-    $default  reduce using rule 13 (stmt)
-
-
-State 30
-
-   40 expr: value •
-
-    $default  reduce using rule 40 (expr)
-
-
-State 31
-
-   48 value: list •
-
-    $default  reduce using rule 48 (value)
-
-
-State 32
-
-   11 stmt: return •
-
-    $default  reduce using rule 11 (stmt)
-
-
-State 33
-
-    3 START: START ufunction • EOL
-
-    EOL  shift, and go to state 61
-
-
-State 34
-
-   10 stmt: funcall •
-   41 expr: funcall •
-
-    ';'       reduce using rule 10 (stmt)
-    ';'       [reduce using rule 41 (expr)]
-    $default  reduce using rule 41 (expr)
-
-
-State 35
-
-    4 START: START error EOL •
-
-    $default  reduce using rule 4 (START)
-
-
-State 36
-
-   25 from: FROM '[' • declare TO expr STEP expr ']' '{' stmts '}'
-
-    DATA_TYPE  shift, and go to state 17
-
-    declare  go to state 62
-
-
-State 37
-
-   23 when: WHEN '[' • condition ']' '{' stmts '}'
-
-    NOT     shift, and go to state 63
-    MINUS   shift, and go to state 10
-    ABS     shift, and go to state 11
-    NUM     shift, and go to state 12
-    BINARY  shift, and go to state 13
-    ROMAN   shift, and go to state 14
-    STR     shift, and go to state 15
-    FUNC    shift, and go to state 16
-    ID      shift, and go to state 40
-    '['     shift, and go to state 19
-    '('     shift, and go to state 64
-
-    MINUS     [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
-
-    condition  go to state 65
-    expr       go to state 66
-    value      go to state 30
-    list       go to state 31
-    funcall    go to state 42
-
-
-State 38
-
-   24 when: WHEN '{' • stmts '}' UNTIL '[' condition ']'
+    8 stmts: flow • stmts
+    9      | flow •
 
     FROM       shift, and go to state 4
     WHEN       shift, and go to state 5
@@ -698,10 +561,183 @@ State 38
     '['        shift, and go to state 19
     '('        shift, and go to state 20
 
-    MINUS     [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
+    EOL       reduce using rule 9 (stmts)
+    MINUS     [reduce using rule 43 (value)]
+    '}'       reduce using rule 9 (stmts)
+    $default  reduce using rule 43 (value)
 
-    stmts       go to state 67
+    stmts       go to state 56
+    stmt        go to state 22
+    flow        go to state 23
+    declare     go to state 24
+    assignment  go to state 25
+    whether     go to state 26
+    when        go to state 27
+    from        go to state 28
+    expr        go to state 29
+    value       go to state 30
+    list        go to state 31
+    return      go to state 32
+    funcall     go to state 34
+
+
+State 24
+
+   10 stmt: declare •
+
+    $default  reduce using rule 10 (stmt)
+
+
+State 25
+
+   11 stmt: assignment •
+
+    $default  reduce using rule 11 (stmt)
+
+
+State 26
+
+   15 flow: whether •
+
+    $default  reduce using rule 15 (flow)
+
+
+State 27
+
+   16 flow: when •
+
+    $default  reduce using rule 16 (flow)
+
+
+State 28
+
+   17 flow: from •
+
+    $default  reduce using rule 17 (flow)
+
+
+State 29
+
+   14 stmt: expr •
+   33 expr: expr • PLUS expr
+   34     | expr • MINUS expr
+   35     | expr • MUL expr
+   36     | expr • DIV expr
+   37     | expr • POW expr
+
+    PLUS   shift, and go to state 57
+    MINUS  shift, and go to state 58
+    MUL    shift, and go to state 59
+    DIV    shift, and go to state 60
+    POW    shift, and go to state 61
+
+    $default  reduce using rule 14 (stmt)
+
+
+State 30
+
+   41 expr: value •
+
+    $default  reduce using rule 41 (expr)
+
+
+State 31
+
+   49 value: list •
+
+    $default  reduce using rule 49 (value)
+
+
+State 32
+
+   13 stmt: return •
+
+    $default  reduce using rule 13 (stmt)
+
+
+State 33
+
+    3 START: START ufunction • EOL
+
+    EOL  shift, and go to state 62
+
+
+State 34
+
+   12 stmt: funcall •
+   42 expr: funcall •
+
+    ';'       reduce using rule 12 (stmt)
+    ';'       [reduce using rule 42 (expr)]
+    $default  reduce using rule 42 (expr)
+
+
+State 35
+
+    4 START: START error EOL •
+
+    $default  reduce using rule 4 (START)
+
+
+State 36
+
+   26 from: FROM '[' • declare TO expr STEP expr ']' '{' stmts '}'
+
+    DATA_TYPE  shift, and go to state 17
+
+    declare  go to state 63
+
+
+State 37
+
+   24 when: WHEN '[' • condition ']' '{' stmts '}'
+
+    NOT     shift, and go to state 64
+    MINUS   shift, and go to state 10
+    ABS     shift, and go to state 11
+    NUM     shift, and go to state 12
+    BINARY  shift, and go to state 13
+    ROMAN   shift, and go to state 14
+    STR     shift, and go to state 15
+    FUNC    shift, and go to state 16
+    ID      shift, and go to state 40
+    '['     shift, and go to state 19
+    '('     shift, and go to state 65
+
+    MINUS     [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
+
+    condition  go to state 66
+    expr       go to state 67
+    value      go to state 30
+    list       go to state 31
+    funcall    go to state 42
+
+
+State 38
+
+   25 when: WHEN '{' • stmts '}' UNTIL '[' condition ']'
+
+    FROM       shift, and go to state 4
+    WHEN       shift, and go to state 5
+    WHETHER    shift, and go to state 6
+    RETURN     shift, and go to state 7
+    MINUS      shift, and go to state 10
+    ABS        shift, and go to state 11
+    NUM        shift, and go to state 12
+    BINARY     shift, and go to state 13
+    ROMAN      shift, and go to state 14
+    STR        shift, and go to state 15
+    FUNC       shift, and go to state 16
+    DATA_TYPE  shift, and go to state 17
+    ID         shift, and go to state 18
+    '['        shift, and go to state 19
+    '('        shift, and go to state 20
+
+    MINUS     [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
+
+    stmts       go to state 68
     stmt        go to state 22
     flow        go to state 23
     declare     go to state 24
@@ -718,10 +754,10 @@ State 38
 
 State 39
 
-   21 whether: WHETHER '[' • condition ']' THEN ':' stmts
-   22        | WHETHER '[' • condition ']' THEN ':' stmts OTHERWISE ':' stmts
+   22 whether: WHETHER '[' • condition ']' THEN ':' '{' stmts '}'
+   23        | WHETHER '[' • condition ']' THEN ':' '{' stmts '}' OTHERWISE ':' '{' stmts '}'
 
-    NOT     shift, and go to state 63
+    NOT     shift, and go to state 64
     MINUS   shift, and go to state 10
     ABS     shift, and go to state 11
     NUM     shift, and go to state 12
@@ -731,13 +767,13 @@ State 39
     FUNC    shift, and go to state 16
     ID      shift, and go to state 40
     '['     shift, and go to state 19
-    '('     shift, and go to state 64
+    '('     shift, and go to state 65
 
-    MINUS     [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
+    MINUS     [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
 
-    condition  go to state 68
-    expr       go to state 66
+    condition  go to state 69
+    expr       go to state 67
     value      go to state 30
     list       go to state 31
     funcall    go to state 42
@@ -745,78 +781,78 @@ State 39
 
 State 40
 
-   46 value: ID •
-   58 funcall: ID • '(' explist ')'
+   47 value: ID •
+   59 funcall: ID • '(' explist ')'
 
     '('  shift, and go to state 49
 
-    $default  reduce using rule 46 (value)
+    $default  reduce using rule 47 (value)
 
 
 State 41
 
-   32 expr: expr • PLUS expr
-   33     | expr • MINUS expr
-   34     | expr • MUL expr
-   35     | expr • DIV expr
-   36     | expr • POW expr
-   55 return: RETURN expr • ';'
+   33 expr: expr • PLUS expr
+   34     | expr • MINUS expr
+   35     | expr • MUL expr
+   36     | expr • DIV expr
+   37     | expr • POW expr
+   56 return: RETURN expr • ';'
 
-    PLUS   shift, and go to state 56
-    MINUS  shift, and go to state 57
-    MUL    shift, and go to state 58
-    DIV    shift, and go to state 59
-    POW    shift, and go to state 60
-    ';'    shift, and go to state 69
+    PLUS   shift, and go to state 57
+    MINUS  shift, and go to state 58
+    MUL    shift, and go to state 59
+    DIV    shift, and go to state 60
+    POW    shift, and go to state 61
+    ';'    shift, and go to state 70
 
 
 State 42
 
-   41 expr: funcall •
+   42 expr: funcall •
 
-    $default  reduce using rule 41 (expr)
+    $default  reduce using rule 42 (expr)
 
 
 State 43
 
-   56 ufunction: DEFINE ID • '(' symlist ')' '{' stmts '}'
-   57          | DEFINE ID • '(' ')' '{' stmts '}'
+   57 ufunction: DEFINE ID • '(' symlist ')' '{' stmts '}'
+   58          | DEFINE ID • '(' ')' '{' stmts '}'
 
-    '('  shift, and go to state 70
+    '('  shift, and go to state 71
 
 
 State 44
 
-   32 expr: expr • PLUS expr
-   33     | expr • MINUS expr
-   34     | expr • MUL expr
-   35     | expr • DIV expr
-   36     | expr • POW expr
-   38     | MINUS expr •
+   33 expr: expr • PLUS expr
+   34     | expr • MINUS expr
+   35     | expr • MUL expr
+   36     | expr • DIV expr
+   37     | expr • POW expr
+   39     | MINUS expr •
 
-    $default  reduce using rule 38 (expr)
+    $default  reduce using rule 39 (expr)
 
 
 State 45
 
-   32 expr: expr • PLUS expr
-   33     | expr • MINUS expr
-   34     | expr • MUL expr
-   35     | expr • DIV expr
-   36     | expr • POW expr
-   37     | ABS expr • ABS
+   33 expr: expr • PLUS expr
+   34     | expr • MINUS expr
+   35     | expr • MUL expr
+   36     | expr • DIV expr
+   37     | expr • POW expr
+   38     | ABS expr • ABS
 
-    PLUS   shift, and go to state 56
-    MINUS  shift, and go to state 57
-    MUL    shift, and go to state 58
-    DIV    shift, and go to state 59
-    POW    shift, and go to state 60
-    ABS    shift, and go to state 71
+    PLUS   shift, and go to state 57
+    MINUS  shift, and go to state 58
+    MUL    shift, and go to state 59
+    DIV    shift, and go to state 60
+    POW    shift, and go to state 61
+    ABS    shift, and go to state 72
 
 
 State 46
 
-   59 funcall: FUNC '(' • explist ')'
+   60 funcall: FUNC '(' • explist ')'
 
     MINUS   shift, and go to state 10
     ABS     shift, and go to state 11
@@ -829,30 +865,30 @@ State 46
     '['     shift, and go to state 19
     '('     shift, and go to state 20
 
-    MINUS     [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
+    MINUS     [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
 
     expr     go to state 51
     value    go to state 30
     list     go to state 31
-    explist  go to state 72
+    explist  go to state 73
     funcall  go to state 42
 
 
 State 47
 
-   17 declare: DATA_TYPE ID • init
+   18 declare: DATA_TYPE ID • init
 
-    ASSIGN  shift, and go to state 73
+    ASSIGN  shift, and go to state 74
 
-    $default  reduce using rule 19 (init)
+    $default  reduce using rule 20 (init)
 
-    init  go to state 74
+    init  go to state 75
 
 
 State 48
 
-   20 assignment: ID ASSIGN • expr
+   21 assignment: ID ASSIGN • expr
 
     MINUS   shift, and go to state 10
     ABS     shift, and go to state 11
@@ -865,10 +901,10 @@ State 48
     '['     shift, and go to state 19
     '('     shift, and go to state 20
 
-    MINUS     [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
+    MINUS     [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
 
-    expr     go to state 75
+    expr     go to state 76
     value    go to state 30
     list     go to state 31
     funcall  go to state 42
@@ -876,7 +912,7 @@ State 48
 
 State 49
 
-   58 funcall: ID '(' • explist ')'
+   59 funcall: ID '(' • explist ')'
 
     MINUS   shift, and go to state 10
     ABS     shift, and go to state 11
@@ -889,65 +925,65 @@ State 49
     '['     shift, and go to state 19
     '('     shift, and go to state 20
 
-    MINUS     [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
+    MINUS     [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
 
     expr     go to state 51
     value    go to state 30
     list     go to state 31
-    explist  go to state 76
+    explist  go to state 77
     funcall  go to state 42
 
 
 State 50
 
-   49 list: '[' ']' •
+   50 list: '[' ']' •
 
-    $default  reduce using rule 49 (list)
+    $default  reduce using rule 50 (list)
 
 
 State 51
 
-   32 expr: expr • PLUS expr
-   33     | expr • MINUS expr
-   34     | expr • MUL expr
-   35     | expr • DIV expr
-   36     | expr • POW expr
-   51 explist: expr •
-   52        | expr • ',' explist
+   33 expr: expr • PLUS expr
+   34     | expr • MINUS expr
+   35     | expr • MUL expr
+   36     | expr • DIV expr
+   37     | expr • POW expr
+   52 explist: expr •
+   53        | expr • ',' explist
 
-    PLUS   shift, and go to state 56
-    MINUS  shift, and go to state 57
-    MUL    shift, and go to state 58
-    DIV    shift, and go to state 59
-    POW    shift, and go to state 60
-    ','    shift, and go to state 77
+    PLUS   shift, and go to state 57
+    MINUS  shift, and go to state 58
+    MUL    shift, and go to state 59
+    DIV    shift, and go to state 60
+    POW    shift, and go to state 61
+    ','    shift, and go to state 78
 
-    $default  reduce using rule 51 (explist)
+    $default  reduce using rule 52 (explist)
 
 
 State 52
 
-   50 list: '[' explist • ']'
+   51 list: '[' explist • ']'
 
-    ']'  shift, and go to state 78
+    ']'  shift, and go to state 79
 
 
 State 53
 
-   32 expr: expr • PLUS expr
-   33     | expr • MINUS expr
-   34     | expr • MUL expr
-   35     | expr • DIV expr
-   36     | expr • POW expr
-   39     | '(' expr • ')'
+   33 expr: expr • PLUS expr
+   34     | expr • MINUS expr
+   35     | expr • MUL expr
+   36     | expr • DIV expr
+   37     | expr • POW expr
+   40     | '(' expr • ')'
 
-    PLUS   shift, and go to state 56
-    MINUS  shift, and go to state 57
-    MUL    shift, and go to state 58
-    DIV    shift, and go to state 59
-    POW    shift, and go to state 60
-    ')'    shift, and go to state 79
+    PLUS   shift, and go to state 57
+    MINUS  shift, and go to state 58
+    MUL    shift, and go to state 59
+    DIV    shift, and go to state 60
+    POW    shift, and go to state 61
+    ')'    shift, and go to state 80
 
 
 State 54
@@ -978,16 +1014,12 @@ State 55
     '['        shift, and go to state 19
     '('        shift, and go to state 20
 
-    PLUS      reduce using rule 42 (value)
-    MINUS     [reduce using rule 42 (value)]
-    MUL       reduce using rule 42 (value)
-    DIV       reduce using rule 42 (value)
-    POW       reduce using rule 42 (value)
-    ';'       reduce using rule 7 (stmts)
-    ';'       [reduce using rule 42 (value)]
-    $default  reduce using rule 7 (stmts)
+    EOL       reduce using rule 7 (stmts)
+    MINUS     [reduce using rule 43 (value)]
+    '}'       reduce using rule 7 (stmts)
+    $default  reduce using rule 43 (value)
 
-    stmts       go to state 80
+    stmts       go to state 81
     stmt        go to state 22
     flow        go to state 23
     declare     go to state 24
@@ -1004,32 +1036,14 @@ State 55
 
 State 56
 
-   32 expr: expr PLUS • expr
+    8 stmts: flow stmts •
 
-    MINUS   shift, and go to state 10
-    ABS     shift, and go to state 11
-    NUM     shift, and go to state 12
-    BINARY  shift, and go to state 13
-    ROMAN   shift, and go to state 14
-    STR     shift, and go to state 15
-    FUNC    shift, and go to state 16
-    ID      shift, and go to state 40
-    '['     shift, and go to state 19
-    '('     shift, and go to state 20
-
-    MINUS     [reduce using rule 42 (value)]
-    ABS       [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
-
-    expr     go to state 81
-    value    go to state 30
-    list     go to state 31
-    funcall  go to state 42
+    $default  reduce using rule 8 (stmts)
 
 
 State 57
 
-   33 expr: expr MINUS • expr
+   33 expr: expr PLUS • expr
 
     MINUS   shift, and go to state 10
     ABS     shift, and go to state 11
@@ -1042,9 +1056,9 @@ State 57
     '['     shift, and go to state 19
     '('     shift, and go to state 20
 
-    MINUS     [reduce using rule 42 (value)]
-    ABS       [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
+    MINUS     [reduce using rule 43 (value)]
+    ABS       [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
 
     expr     go to state 82
     value    go to state 30
@@ -1054,7 +1068,7 @@ State 57
 
 State 58
 
-   34 expr: expr MUL • expr
+   34 expr: expr MINUS • expr
 
     MINUS   shift, and go to state 10
     ABS     shift, and go to state 11
@@ -1067,9 +1081,9 @@ State 58
     '['     shift, and go to state 19
     '('     shift, and go to state 20
 
-    MINUS     [reduce using rule 42 (value)]
-    ABS       [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
+    MINUS     [reduce using rule 43 (value)]
+    ABS       [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
 
     expr     go to state 83
     value    go to state 30
@@ -1079,7 +1093,7 @@ State 58
 
 State 59
 
-   35 expr: expr DIV • expr
+   35 expr: expr MUL • expr
 
     MINUS   shift, and go to state 10
     ABS     shift, and go to state 11
@@ -1092,9 +1106,9 @@ State 59
     '['     shift, and go to state 19
     '('     shift, and go to state 20
 
-    MINUS     [reduce using rule 42 (value)]
-    ABS       [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
+    MINUS     [reduce using rule 43 (value)]
+    ABS       [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
 
     expr     go to state 84
     value    go to state 30
@@ -1104,7 +1118,7 @@ State 59
 
 State 60
 
-   36 expr: expr POW • expr
+   36 expr: expr DIV • expr
 
     MINUS   shift, and go to state 10
     ABS     shift, and go to state 11
@@ -1117,9 +1131,9 @@ State 60
     '['     shift, and go to state 19
     '('     shift, and go to state 20
 
-    MINUS     [reduce using rule 42 (value)]
-    ABS       [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
+    MINUS     [reduce using rule 43 (value)]
+    ABS       [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
 
     expr     go to state 85
     value    go to state 30
@@ -1129,50 +1143,48 @@ State 60
 
 State 61
 
+   37 expr: expr POW • expr
+
+    MINUS   shift, and go to state 10
+    ABS     shift, and go to state 11
+    NUM     shift, and go to state 12
+    BINARY  shift, and go to state 13
+    ROMAN   shift, and go to state 14
+    STR     shift, and go to state 15
+    FUNC    shift, and go to state 16
+    ID      shift, and go to state 40
+    '['     shift, and go to state 19
+    '('     shift, and go to state 20
+
+    MINUS     [reduce using rule 43 (value)]
+    ABS       [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
+
+    expr     go to state 86
+    value    go to state 30
+    list     go to state 31
+    funcall  go to state 42
+
+
+State 62
+
     3 START: START ufunction EOL •
 
     $default  reduce using rule 3 (START)
 
 
-State 62
-
-   25 from: FROM '[' declare • TO expr STEP expr ']' '{' stmts '}'
-
-    TO  shift, and go to state 86
-
-
 State 63
 
-   29 condition: NOT • condition
+   26 from: FROM '[' declare • TO expr STEP expr ']' '{' stmts '}'
 
-    NOT     shift, and go to state 63
-    MINUS   shift, and go to state 10
-    ABS     shift, and go to state 11
-    NUM     shift, and go to state 12
-    BINARY  shift, and go to state 13
-    ROMAN   shift, and go to state 14
-    STR     shift, and go to state 15
-    FUNC    shift, and go to state 16
-    ID      shift, and go to state 40
-    '['     shift, and go to state 19
-    '('     shift, and go to state 64
-
-    MINUS     [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
-
-    condition  go to state 87
-    expr       go to state 66
-    value      go to state 30
-    list       go to state 31
-    funcall    go to state 42
+    TO  shift, and go to state 87
 
 
 State 64
 
-   30 condition: '(' • condition ')'
-   39 expr: '(' • expr ')'
+   30 condition: NOT • condition
 
-    NOT     shift, and go to state 63
+    NOT     shift, and go to state 64
     MINUS   shift, and go to state 10
     ABS     shift, and go to state 11
     NUM     shift, and go to state 12
@@ -1182,13 +1194,13 @@ State 64
     FUNC    shift, and go to state 16
     ID      shift, and go to state 40
     '['     shift, and go to state 19
-    '('     shift, and go to state 64
+    '('     shift, and go to state 65
 
-    MINUS     [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
+    MINUS     [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
 
     condition  go to state 88
-    expr       go to state 89
+    expr       go to state 67
     value      go to state 30
     list       go to state 31
     funcall    go to state 42
@@ -1196,145 +1208,116 @@ State 64
 
 State 65
 
-   23 when: WHEN '[' condition • ']' '{' stmts '}'
-   27 condition: condition • AND condition
-   28          | condition • OR condition
+   31 condition: '(' • condition ')'
+   40 expr: '(' • expr ')'
 
-    AND  shift, and go to state 90
-    OR   shift, and go to state 91
-    ']'  shift, and go to state 92
+    NOT     shift, and go to state 64
+    MINUS   shift, and go to state 10
+    ABS     shift, and go to state 11
+    NUM     shift, and go to state 12
+    BINARY  shift, and go to state 13
+    ROMAN   shift, and go to state 14
+    STR     shift, and go to state 15
+    FUNC    shift, and go to state 16
+    ID      shift, and go to state 40
+    '['     shift, and go to state 19
+    '('     shift, and go to state 65
+
+    MINUS     [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
+
+    condition  go to state 89
+    expr       go to state 90
+    value      go to state 30
+    list       go to state 31
+    funcall    go to state 42
 
 
 State 66
 
-   26 condition: expr • CMP expr
-   31          | expr •
-   32 expr: expr • PLUS expr
-   33     | expr • MINUS expr
-   34     | expr • MUL expr
-   35     | expr • DIV expr
-   36     | expr • POW expr
+   24 when: WHEN '[' condition • ']' '{' stmts '}'
+   28 condition: condition • AND condition
+   29          | condition • OR condition
 
-    PLUS   shift, and go to state 56
-    MINUS  shift, and go to state 57
-    MUL    shift, and go to state 58
-    DIV    shift, and go to state 59
-    POW    shift, and go to state 60
-    CMP    shift, and go to state 93
-
-    $default  reduce using rule 31 (condition)
+    AND  shift, and go to state 91
+    OR   shift, and go to state 92
+    ']'  shift, and go to state 93
 
 
 State 67
 
-   24 when: WHEN '{' stmts • '}' UNTIL '[' condition ']'
+   27 condition: expr • CMP expr
+   32          | expr •
+   33 expr: expr • PLUS expr
+   34     | expr • MINUS expr
+   35     | expr • MUL expr
+   36     | expr • DIV expr
+   37     | expr • POW expr
 
-    '}'  shift, and go to state 94
+    PLUS   shift, and go to state 57
+    MINUS  shift, and go to state 58
+    MUL    shift, and go to state 59
+    DIV    shift, and go to state 60
+    POW    shift, and go to state 61
+    CMP    shift, and go to state 94
+
+    $default  reduce using rule 32 (condition)
 
 
 State 68
 
-   21 whether: WHETHER '[' condition • ']' THEN ':' stmts
-   22        | WHETHER '[' condition • ']' THEN ':' stmts OTHERWISE ':' stmts
-   27 condition: condition • AND condition
-   28          | condition • OR condition
+   25 when: WHEN '{' stmts • '}' UNTIL '[' condition ']'
 
-    AND  shift, and go to state 90
-    OR   shift, and go to state 91
-    ']'  shift, and go to state 95
+    '}'  shift, and go to state 95
 
 
 State 69
 
-   55 return: RETURN expr ';' •
+   22 whether: WHETHER '[' condition • ']' THEN ':' '{' stmts '}'
+   23        | WHETHER '[' condition • ']' THEN ':' '{' stmts '}' OTHERWISE ':' '{' stmts '}'
+   28 condition: condition • AND condition
+   29          | condition • OR condition
 
-    $default  reduce using rule 55 (return)
+    AND  shift, and go to state 91
+    OR   shift, and go to state 92
+    ']'  shift, and go to state 96
 
 
 State 70
 
-   56 ufunction: DEFINE ID '(' • symlist ')' '{' stmts '}'
-   57          | DEFINE ID '(' • ')' '{' stmts '}'
+   56 return: RETURN expr ';' •
 
-    ID   shift, and go to state 96
-    ')'  shift, and go to state 97
-
-    symlist  go to state 98
+    $default  reduce using rule 56 (return)
 
 
 State 71
 
-   37 expr: ABS expr ABS •
+   57 ufunction: DEFINE ID '(' • symlist ')' '{' stmts '}'
+   58          | DEFINE ID '(' • ')' '{' stmts '}'
 
-    $default  reduce using rule 37 (expr)
+    ID   shift, and go to state 97
+    ')'  shift, and go to state 98
+
+    symlist  go to state 99
 
 
 State 72
 
-   59 funcall: FUNC '(' explist • ')'
+   38 expr: ABS expr ABS •
 
-    ')'  shift, and go to state 99
+    $default  reduce using rule 38 (expr)
 
 
 State 73
 
-   18 init: ASSIGN • expr
+   60 funcall: FUNC '(' explist • ')'
 
-    MINUS   shift, and go to state 10
-    ABS     shift, and go to state 11
-    NUM     shift, and go to state 12
-    BINARY  shift, and go to state 13
-    ROMAN   shift, and go to state 14
-    STR     shift, and go to state 15
-    FUNC    shift, and go to state 16
-    ID      shift, and go to state 40
-    '['     shift, and go to state 19
-    '('     shift, and go to state 20
-
-    MINUS     [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
-
-    expr     go to state 100
-    value    go to state 30
-    list     go to state 31
-    funcall  go to state 42
+    ')'  shift, and go to state 100
 
 
 State 74
 
-   17 declare: DATA_TYPE ID init •
-
-    $default  reduce using rule 17 (declare)
-
-
-State 75
-
-   20 assignment: ID ASSIGN expr •
-   32 expr: expr • PLUS expr
-   33     | expr • MINUS expr
-   34     | expr • MUL expr
-   35     | expr • DIV expr
-   36     | expr • POW expr
-
-    PLUS   shift, and go to state 56
-    MINUS  shift, and go to state 57
-    MUL    shift, and go to state 58
-    DIV    shift, and go to state 59
-    POW    shift, and go to state 60
-
-    $default  reduce using rule 20 (assignment)
-
-
-State 76
-
-   58 funcall: ID '(' explist • ')'
-
-    ')'  shift, and go to state 101
-
-
-State 77
-
-   52 explist: expr ',' • explist
+   19 init: ASSIGN • expr
 
     MINUS   shift, and go to state 10
     ABS     shift, and go to state 11
@@ -1347,109 +1330,165 @@ State 77
     '['     shift, and go to state 19
     '('     shift, and go to state 20
 
-    MINUS     [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
+    MINUS     [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
 
-    expr     go to state 51
+    expr     go to state 101
     value    go to state 30
     list     go to state 31
-    explist  go to state 102
     funcall  go to state 42
+
+
+State 75
+
+   18 declare: DATA_TYPE ID init •
+
+    $default  reduce using rule 18 (declare)
+
+
+State 76
+
+   21 assignment: ID ASSIGN expr •
+   33 expr: expr • PLUS expr
+   34     | expr • MINUS expr
+   35     | expr • MUL expr
+   36     | expr • DIV expr
+   37     | expr • POW expr
+
+    PLUS   shift, and go to state 57
+    MINUS  shift, and go to state 58
+    MUL    shift, and go to state 59
+    DIV    shift, and go to state 60
+    POW    shift, and go to state 61
+
+    $default  reduce using rule 21 (assignment)
+
+
+State 77
+
+   59 funcall: ID '(' explist • ')'
+
+    ')'  shift, and go to state 102
 
 
 State 78
 
-   50 list: '[' explist ']' •
+   53 explist: expr ',' • explist
 
-    $default  reduce using rule 50 (list)
+    MINUS   shift, and go to state 10
+    ABS     shift, and go to state 11
+    NUM     shift, and go to state 12
+    BINARY  shift, and go to state 13
+    ROMAN   shift, and go to state 14
+    STR     shift, and go to state 15
+    FUNC    shift, and go to state 16
+    ID      shift, and go to state 40
+    '['     shift, and go to state 19
+    '('     shift, and go to state 20
+
+    MINUS     [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
+
+    expr     go to state 51
+    value    go to state 30
+    list     go to state 31
+    explist  go to state 103
+    funcall  go to state 42
 
 
 State 79
 
-   39 expr: '(' expr ')' •
+   51 list: '[' explist ']' •
 
-    $default  reduce using rule 39 (expr)
+    $default  reduce using rule 51 (list)
 
 
 State 80
+
+   40 expr: '(' expr ')' •
+
+    $default  reduce using rule 40 (expr)
+
+
+State 81
 
     6 stmts: stmt ';' stmts •
 
     $default  reduce using rule 6 (stmts)
 
 
-State 81
-
-   32 expr: expr • PLUS expr
-   32     | expr PLUS expr •
-   33     | expr • MINUS expr
-   34     | expr • MUL expr
-   35     | expr • DIV expr
-   36     | expr • POW expr
-
-    MUL  shift, and go to state 58
-    DIV  shift, and go to state 59
-
-    $default  reduce using rule 32 (expr)
-
-
 State 82
 
-   32 expr: expr • PLUS expr
-   33     | expr • MINUS expr
-   33     | expr MINUS expr •
-   34     | expr • MUL expr
-   35     | expr • DIV expr
-   36     | expr • POW expr
+   33 expr: expr • PLUS expr
+   33     | expr PLUS expr •
+   34     | expr • MINUS expr
+   35     | expr • MUL expr
+   36     | expr • DIV expr
+   37     | expr • POW expr
 
-    MUL  shift, and go to state 58
-    DIV  shift, and go to state 59
+    MUL  shift, and go to state 59
+    DIV  shift, and go to state 60
 
     $default  reduce using rule 33 (expr)
 
 
 State 83
 
-   32 expr: expr • PLUS expr
-   33     | expr • MINUS expr
-   34     | expr • MUL expr
-   34     | expr MUL expr •
-   35     | expr • DIV expr
-   36     | expr • POW expr
+   33 expr: expr • PLUS expr
+   34     | expr • MINUS expr
+   34     | expr MINUS expr •
+   35     | expr • MUL expr
+   36     | expr • DIV expr
+   37     | expr • POW expr
+
+    MUL  shift, and go to state 59
+    DIV  shift, and go to state 60
 
     $default  reduce using rule 34 (expr)
 
 
 State 84
 
-   32 expr: expr • PLUS expr
-   33     | expr • MINUS expr
-   34     | expr • MUL expr
-   35     | expr • DIV expr
-   35     | expr DIV expr •
-   36     | expr • POW expr
+   33 expr: expr • PLUS expr
+   34     | expr • MINUS expr
+   35     | expr • MUL expr
+   35     | expr MUL expr •
+   36     | expr • DIV expr
+   37     | expr • POW expr
 
     $default  reduce using rule 35 (expr)
 
 
 State 85
 
-   32 expr: expr • PLUS expr
-   33     | expr • MINUS expr
-   34     | expr • MUL expr
-   35     | expr • DIV expr
-   36     | expr • POW expr
-   36     | expr POW expr •
-
-    MUL  shift, and go to state 58
-    DIV  shift, and go to state 59
+   33 expr: expr • PLUS expr
+   34     | expr • MINUS expr
+   35     | expr • MUL expr
+   36     | expr • DIV expr
+   36     | expr DIV expr •
+   37     | expr • POW expr
 
     $default  reduce using rule 36 (expr)
 
 
 State 86
 
-   25 from: FROM '[' declare TO • expr STEP expr ']' '{' stmts '}'
+   33 expr: expr • PLUS expr
+   34     | expr • MINUS expr
+   35     | expr • MUL expr
+   36     | expr • DIV expr
+   37     | expr • POW expr
+   37     | expr POW expr •
+
+    MUL  shift, and go to state 59
+    DIV  shift, and go to state 60
+
+    $default  reduce using rule 37 (expr)
+
+
+State 87
+
+   26 from: FROM '[' declare TO • expr STEP expr ']' '{' stmts '}'
 
     MINUS   shift, and go to state 10
     ABS     shift, and go to state 11
@@ -1462,94 +1501,68 @@ State 86
     '['     shift, and go to state 19
     '('     shift, and go to state 20
 
-    MINUS     [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
+    MINUS     [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
 
-    expr     go to state 103
+    expr     go to state 104
     value    go to state 30
     list     go to state 31
     funcall  go to state 42
 
 
-State 87
-
-   27 condition: condition • AND condition
-   28          | condition • OR condition
-   29          | NOT condition •
-
-    AND  shift, and go to state 90
-    OR   shift, and go to state 91
-
-    AND       [reduce using rule 29 (condition)]
-    OR        [reduce using rule 29 (condition)]
-    $default  reduce using rule 29 (condition)
-
-
 State 88
 
-   27 condition: condition • AND condition
-   28          | condition • OR condition
-   30          | '(' condition • ')'
+   28 condition: condition • AND condition
+   29          | condition • OR condition
+   30          | NOT condition •
 
-    AND  shift, and go to state 90
-    OR   shift, and go to state 91
-    ')'  shift, and go to state 104
+    AND  shift, and go to state 91
+    OR   shift, and go to state 92
+
+    AND       [reduce using rule 30 (condition)]
+    OR        [reduce using rule 30 (condition)]
+    $default  reduce using rule 30 (condition)
 
 
 State 89
 
-   26 condition: expr • CMP expr
-   31          | expr •
-   32 expr: expr • PLUS expr
-   33     | expr • MINUS expr
-   34     | expr • MUL expr
-   35     | expr • DIV expr
-   36     | expr • POW expr
-   39     | '(' expr • ')'
+   28 condition: condition • AND condition
+   29          | condition • OR condition
+   31          | '(' condition • ')'
 
-    PLUS   shift, and go to state 56
-    MINUS  shift, and go to state 57
-    MUL    shift, and go to state 58
-    DIV    shift, and go to state 59
-    POW    shift, and go to state 60
-    CMP    shift, and go to state 93
-    ')'    shift, and go to state 79
-
-    ')'       [reduce using rule 31 (condition)]
-    $default  reduce using rule 31 (condition)
+    AND  shift, and go to state 91
+    OR   shift, and go to state 92
+    ')'  shift, and go to state 105
 
 
 State 90
 
-   27 condition: condition AND • condition
+   27 condition: expr • CMP expr
+   32          | expr •
+   33 expr: expr • PLUS expr
+   34     | expr • MINUS expr
+   35     | expr • MUL expr
+   36     | expr • DIV expr
+   37     | expr • POW expr
+   40     | '(' expr • ')'
 
-    NOT     shift, and go to state 63
-    MINUS   shift, and go to state 10
-    ABS     shift, and go to state 11
-    NUM     shift, and go to state 12
-    BINARY  shift, and go to state 13
-    ROMAN   shift, and go to state 14
-    STR     shift, and go to state 15
-    FUNC    shift, and go to state 16
-    ID      shift, and go to state 40
-    '['     shift, and go to state 19
-    '('     shift, and go to state 64
+    PLUS   shift, and go to state 57
+    MINUS  shift, and go to state 58
+    MUL    shift, and go to state 59
+    DIV    shift, and go to state 60
+    POW    shift, and go to state 61
+    CMP    shift, and go to state 94
+    ')'    shift, and go to state 80
 
-    MINUS     [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
-
-    condition  go to state 105
-    expr       go to state 66
-    value      go to state 30
-    list       go to state 31
-    funcall    go to state 42
+    ')'       [reduce using rule 32 (condition)]
+    $default  reduce using rule 32 (condition)
 
 
 State 91
 
-   28 condition: condition OR • condition
+   28 condition: condition AND • condition
 
-    NOT     shift, and go to state 63
+    NOT     shift, and go to state 64
     MINUS   shift, and go to state 10
     ABS     shift, and go to state 11
     NUM     shift, and go to state 12
@@ -1559,13 +1572,13 @@ State 91
     FUNC    shift, and go to state 16
     ID      shift, and go to state 40
     '['     shift, and go to state 19
-    '('     shift, and go to state 64
+    '('     shift, and go to state 65
 
-    MINUS     [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
+    MINUS     [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
 
     condition  go to state 106
-    expr       go to state 66
+    expr       go to state 67
     value      go to state 30
     list       go to state 31
     funcall    go to state 42
@@ -1573,14 +1586,40 @@ State 91
 
 State 92
 
-   23 when: WHEN '[' condition ']' • '{' stmts '}'
+   29 condition: condition OR • condition
 
-    '{'  shift, and go to state 107
+    NOT     shift, and go to state 64
+    MINUS   shift, and go to state 10
+    ABS     shift, and go to state 11
+    NUM     shift, and go to state 12
+    BINARY  shift, and go to state 13
+    ROMAN   shift, and go to state 14
+    STR     shift, and go to state 15
+    FUNC    shift, and go to state 16
+    ID      shift, and go to state 40
+    '['     shift, and go to state 19
+    '('     shift, and go to state 65
+
+    MINUS     [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
+
+    condition  go to state 107
+    expr       go to state 67
+    value      go to state 30
+    list       go to state 31
+    funcall    go to state 42
 
 
 State 93
 
-   26 condition: expr CMP • expr
+   24 when: WHEN '[' condition ']' • '{' stmts '}'
+
+    '{'  shift, and go to state 108
+
+
+State 94
+
+   27 condition: expr CMP • expr
 
     MINUS   shift, and go to state 10
     ABS     shift, and go to state 11
@@ -1593,139 +1632,125 @@ State 93
     '['     shift, and go to state 19
     '('     shift, and go to state 20
 
-    MINUS     [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
+    MINUS     [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
 
-    expr     go to state 108
+    expr     go to state 109
     value    go to state 30
     list     go to state 31
     funcall  go to state 42
 
 
-State 94
-
-   24 when: WHEN '{' stmts '}' • UNTIL '[' condition ']'
-
-    UNTIL  shift, and go to state 109
-
-
 State 95
 
-   21 whether: WHETHER '[' condition ']' • THEN ':' stmts
-   22        | WHETHER '[' condition ']' • THEN ':' stmts OTHERWISE ':' stmts
+   25 when: WHEN '{' stmts '}' • UNTIL '[' condition ']'
 
-    THEN  shift, and go to state 110
+    UNTIL  shift, and go to state 110
 
 
 State 96
 
-   53 symlist: ID •
-   54        | ID • ',' symlist
+   22 whether: WHETHER '[' condition ']' • THEN ':' '{' stmts '}'
+   23        | WHETHER '[' condition ']' • THEN ':' '{' stmts '}' OTHERWISE ':' '{' stmts '}'
 
-    ','  shift, and go to state 111
-
-    $default  reduce using rule 53 (symlist)
+    THEN  shift, and go to state 111
 
 
 State 97
 
-   57 ufunction: DEFINE ID '(' ')' • '{' stmts '}'
+   54 symlist: ID •
+   55        | ID • ',' symlist
 
-    '{'  shift, and go to state 112
+    ','  shift, and go to state 112
+
+    $default  reduce using rule 54 (symlist)
 
 
 State 98
 
-   56 ufunction: DEFINE ID '(' symlist • ')' '{' stmts '}'
+   58 ufunction: DEFINE ID '(' ')' • '{' stmts '}'
 
-    ')'  shift, and go to state 113
+    '{'  shift, and go to state 113
 
 
 State 99
 
-   59 funcall: FUNC '(' explist ')' •
+   57 ufunction: DEFINE ID '(' symlist • ')' '{' stmts '}'
 
-    $default  reduce using rule 59 (funcall)
+    ')'  shift, and go to state 114
 
 
 State 100
 
-   18 init: ASSIGN expr •
-   32 expr: expr • PLUS expr
-   33     | expr • MINUS expr
-   34     | expr • MUL expr
-   35     | expr • DIV expr
-   36     | expr • POW expr
+   60 funcall: FUNC '(' explist ')' •
 
-    PLUS   shift, and go to state 56
-    MINUS  shift, and go to state 57
-    MUL    shift, and go to state 58
-    DIV    shift, and go to state 59
-    POW    shift, and go to state 60
-
-    $default  reduce using rule 18 (init)
+    $default  reduce using rule 60 (funcall)
 
 
 State 101
 
-   58 funcall: ID '(' explist ')' •
+   19 init: ASSIGN expr •
+   33 expr: expr • PLUS expr
+   34     | expr • MINUS expr
+   35     | expr • MUL expr
+   36     | expr • DIV expr
+   37     | expr • POW expr
 
-    $default  reduce using rule 58 (funcall)
+    PLUS   shift, and go to state 57
+    MINUS  shift, and go to state 58
+    MUL    shift, and go to state 59
+    DIV    shift, and go to state 60
+    POW    shift, and go to state 61
+
+    $default  reduce using rule 19 (init)
 
 
 State 102
 
-   52 explist: expr ',' explist •
+   59 funcall: ID '(' explist ')' •
 
-    $default  reduce using rule 52 (explist)
+    $default  reduce using rule 59 (funcall)
 
 
 State 103
 
-   25 from: FROM '[' declare TO expr • STEP expr ']' '{' stmts '}'
-   32 expr: expr • PLUS expr
-   33     | expr • MINUS expr
-   34     | expr • MUL expr
-   35     | expr • DIV expr
-   36     | expr • POW expr
+   53 explist: expr ',' explist •
 
-    STEP   shift, and go to state 114
-    PLUS   shift, and go to state 56
-    MINUS  shift, and go to state 57
-    MUL    shift, and go to state 58
-    DIV    shift, and go to state 59
-    POW    shift, and go to state 60
+    $default  reduce using rule 53 (explist)
 
 
 State 104
 
-   30 condition: '(' condition ')' •
+   26 from: FROM '[' declare TO expr • STEP expr ']' '{' stmts '}'
+   33 expr: expr • PLUS expr
+   34     | expr • MINUS expr
+   35     | expr • MUL expr
+   36     | expr • DIV expr
+   37     | expr • POW expr
 
-    $default  reduce using rule 30 (condition)
+    STEP   shift, and go to state 115
+    PLUS   shift, and go to state 57
+    MINUS  shift, and go to state 58
+    MUL    shift, and go to state 59
+    DIV    shift, and go to state 60
+    POW    shift, and go to state 61
 
 
 State 105
 
-   27 condition: condition • AND condition
-   27          | condition AND condition •
-   28          | condition • OR condition
+   31 condition: '(' condition ')' •
 
-    AND  shift, and go to state 90
-    OR   shift, and go to state 91
-
-    AND       [reduce using rule 27 (condition)]
-    OR        [reduce using rule 27 (condition)]
-    $default  reduce using rule 27 (condition)
+    $default  reduce using rule 31 (condition)
 
 
 State 106
 
-   27 condition: condition • AND condition
-   28          | condition • OR condition
-   28          | condition OR condition •
+   28 condition: condition • AND condition
+   28          | condition AND condition •
+   29          | condition • OR condition
 
-    AND  shift, and go to state 90
-    OR   shift, and go to state 91
+    AND  shift, and go to state 91
+    OR   shift, and go to state 92
 
     AND       [reduce using rule 28 (condition)]
     OR        [reduce using rule 28 (condition)]
@@ -1734,87 +1759,21 @@ State 106
 
 State 107
 
-   23 when: WHEN '[' condition ']' '{' • stmts '}'
+   28 condition: condition • AND condition
+   29          | condition • OR condition
+   29          | condition OR condition •
 
-    FROM       shift, and go to state 4
-    WHEN       shift, and go to state 5
-    WHETHER    shift, and go to state 6
-    RETURN     shift, and go to state 7
-    MINUS      shift, and go to state 10
-    ABS        shift, and go to state 11
-    NUM        shift, and go to state 12
-    BINARY     shift, and go to state 13
-    ROMAN      shift, and go to state 14
-    STR        shift, and go to state 15
-    FUNC       shift, and go to state 16
-    DATA_TYPE  shift, and go to state 17
-    ID         shift, and go to state 18
-    '['        shift, and go to state 19
-    '('        shift, and go to state 20
+    AND  shift, and go to state 91
+    OR   shift, and go to state 92
 
-    MINUS     [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
-
-    stmts       go to state 115
-    stmt        go to state 22
-    flow        go to state 23
-    declare     go to state 24
-    assignment  go to state 25
-    whether     go to state 26
-    when        go to state 27
-    from        go to state 28
-    expr        go to state 29
-    value       go to state 30
-    list        go to state 31
-    return      go to state 32
-    funcall     go to state 34
+    AND       [reduce using rule 29 (condition)]
+    OR        [reduce using rule 29 (condition)]
+    $default  reduce using rule 29 (condition)
 
 
 State 108
 
-   26 condition: expr CMP expr •
-   32 expr: expr • PLUS expr
-   33     | expr • MINUS expr
-   34     | expr • MUL expr
-   35     | expr • DIV expr
-   36     | expr • POW expr
-
-    PLUS   shift, and go to state 56
-    MINUS  shift, and go to state 57
-    MUL    shift, and go to state 58
-    DIV    shift, and go to state 59
-    POW    shift, and go to state 60
-
-    $default  reduce using rule 26 (condition)
-
-
-State 109
-
-   24 when: WHEN '{' stmts '}' UNTIL • '[' condition ']'
-
-    '['  shift, and go to state 116
-
-
-State 110
-
-   21 whether: WHETHER '[' condition ']' THEN • ':' stmts
-   22        | WHETHER '[' condition ']' THEN • ':' stmts OTHERWISE ':' stmts
-
-    ':'  shift, and go to state 117
-
-
-State 111
-
-   54 symlist: ID ',' • symlist
-
-    ID  shift, and go to state 96
-
-    symlist  go to state 118
-
-
-State 112
-
-   57 ufunction: DEFINE ID '(' ')' '{' • stmts '}'
+   24 when: WHEN '[' condition ']' '{' • stmts '}'
 
     FROM       shift, and go to state 4
     WHEN       shift, and go to state 5
@@ -1832,10 +1791,10 @@ State 112
     '['        shift, and go to state 19
     '('        shift, and go to state 20
 
-    MINUS     [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
+    MINUS     [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
 
-    stmts       go to state 119
+    stmts       go to state 116
     stmt        go to state 22
     flow        go to state 23
     declare     go to state 24
@@ -1850,16 +1809,96 @@ State 112
     funcall     go to state 34
 
 
+State 109
+
+   27 condition: expr CMP expr •
+   33 expr: expr • PLUS expr
+   34     | expr • MINUS expr
+   35     | expr • MUL expr
+   36     | expr • DIV expr
+   37     | expr • POW expr
+
+    PLUS   shift, and go to state 57
+    MINUS  shift, and go to state 58
+    MUL    shift, and go to state 59
+    DIV    shift, and go to state 60
+    POW    shift, and go to state 61
+
+    $default  reduce using rule 27 (condition)
+
+
+State 110
+
+   25 when: WHEN '{' stmts '}' UNTIL • '[' condition ']'
+
+    '['  shift, and go to state 117
+
+
+State 111
+
+   22 whether: WHETHER '[' condition ']' THEN • ':' '{' stmts '}'
+   23        | WHETHER '[' condition ']' THEN • ':' '{' stmts '}' OTHERWISE ':' '{' stmts '}'
+
+    ':'  shift, and go to state 118
+
+
+State 112
+
+   55 symlist: ID ',' • symlist
+
+    ID  shift, and go to state 97
+
+    symlist  go to state 119
+
+
 State 113
 
-   56 ufunction: DEFINE ID '(' symlist ')' • '{' stmts '}'
+   58 ufunction: DEFINE ID '(' ')' '{' • stmts '}'
 
-    '{'  shift, and go to state 120
+    FROM       shift, and go to state 4
+    WHEN       shift, and go to state 5
+    WHETHER    shift, and go to state 6
+    RETURN     shift, and go to state 7
+    MINUS      shift, and go to state 10
+    ABS        shift, and go to state 11
+    NUM        shift, and go to state 12
+    BINARY     shift, and go to state 13
+    ROMAN      shift, and go to state 14
+    STR        shift, and go to state 15
+    FUNC       shift, and go to state 16
+    DATA_TYPE  shift, and go to state 17
+    ID         shift, and go to state 18
+    '['        shift, and go to state 19
+    '('        shift, and go to state 20
+
+    MINUS     [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
+
+    stmts       go to state 120
+    stmt        go to state 22
+    flow        go to state 23
+    declare     go to state 24
+    assignment  go to state 25
+    whether     go to state 26
+    when        go to state 27
+    from        go to state 28
+    expr        go to state 29
+    value       go to state 30
+    list        go to state 31
+    return      go to state 32
+    funcall     go to state 34
 
 
 State 114
 
-   25 from: FROM '[' declare TO expr STEP • expr ']' '{' stmts '}'
+   57 ufunction: DEFINE ID '(' symlist ')' • '{' stmts '}'
+
+    '{'  shift, and go to state 121
+
+
+State 115
+
+   26 from: FROM '[' declare TO expr STEP • expr ']' '{' stmts '}'
 
     MINUS   shift, and go to state 10
     ABS     shift, and go to state 11
@@ -1872,27 +1911,27 @@ State 114
     '['     shift, and go to state 19
     '('     shift, and go to state 20
 
-    MINUS     [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
+    MINUS     [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
 
-    expr     go to state 121
+    expr     go to state 122
     value    go to state 30
     list     go to state 31
     funcall  go to state 42
 
 
-State 115
-
-   23 when: WHEN '[' condition ']' '{' stmts • '}'
-
-    '}'  shift, and go to state 122
-
-
 State 116
 
-   24 when: WHEN '{' stmts '}' UNTIL '[' • condition ']'
+   24 when: WHEN '[' condition ']' '{' stmts • '}'
 
-    NOT     shift, and go to state 63
+    '}'  shift, and go to state 123
+
+
+State 117
+
+   25 when: WHEN '{' stmts '}' UNTIL '[' • condition ']'
+
+    NOT     shift, and go to state 64
     MINUS   shift, and go to state 10
     ABS     shift, and go to state 11
     NUM     shift, and go to state 12
@@ -1902,199 +1941,43 @@ State 116
     FUNC    shift, and go to state 16
     ID      shift, and go to state 40
     '['     shift, and go to state 19
-    '('     shift, and go to state 64
+    '('     shift, and go to state 65
 
-    MINUS     [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
+    MINUS     [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
 
-    condition  go to state 123
-    expr       go to state 66
+    condition  go to state 124
+    expr       go to state 67
     value      go to state 30
     list       go to state 31
     funcall    go to state 42
 
 
-State 117
-
-   21 whether: WHETHER '[' condition ']' THEN ':' • stmts
-   22        | WHETHER '[' condition ']' THEN ':' • stmts OTHERWISE ':' stmts
-
-    FROM       shift, and go to state 4
-    WHEN       shift, and go to state 5
-    WHETHER    shift, and go to state 6
-    RETURN     shift, and go to state 7
-    MINUS      shift, and go to state 10
-    ABS        shift, and go to state 11
-    NUM        shift, and go to state 12
-    BINARY     shift, and go to state 13
-    ROMAN      shift, and go to state 14
-    STR        shift, and go to state 15
-    FUNC       shift, and go to state 16
-    DATA_TYPE  shift, and go to state 17
-    ID         shift, and go to state 18
-    '['        shift, and go to state 19
-    '('        shift, and go to state 20
-
-    MINUS     [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
-
-    stmts       go to state 124
-    stmt        go to state 22
-    flow        go to state 23
-    declare     go to state 24
-    assignment  go to state 25
-    whether     go to state 26
-    when        go to state 27
-    from        go to state 28
-    expr        go to state 29
-    value       go to state 30
-    list        go to state 31
-    return      go to state 32
-    funcall     go to state 34
-
-
 State 118
 
-   54 symlist: ID ',' symlist •
+   22 whether: WHETHER '[' condition ']' THEN ':' • '{' stmts '}'
+   23        | WHETHER '[' condition ']' THEN ':' • '{' stmts '}' OTHERWISE ':' '{' stmts '}'
 
-    $default  reduce using rule 54 (symlist)
+    '{'  shift, and go to state 125
 
 
 State 119
 
-   57 ufunction: DEFINE ID '(' ')' '{' stmts • '}'
+   55 symlist: ID ',' symlist •
 
-    '}'  shift, and go to state 125
+    $default  reduce using rule 55 (symlist)
 
 
 State 120
 
-   56 ufunction: DEFINE ID '(' symlist ')' '{' • stmts '}'
+   58 ufunction: DEFINE ID '(' ')' '{' stmts • '}'
 
-    FROM       shift, and go to state 4
-    WHEN       shift, and go to state 5
-    WHETHER    shift, and go to state 6
-    RETURN     shift, and go to state 7
-    MINUS      shift, and go to state 10
-    ABS        shift, and go to state 11
-    NUM        shift, and go to state 12
-    BINARY     shift, and go to state 13
-    ROMAN      shift, and go to state 14
-    STR        shift, and go to state 15
-    FUNC       shift, and go to state 16
-    DATA_TYPE  shift, and go to state 17
-    ID         shift, and go to state 18
-    '['        shift, and go to state 19
-    '('        shift, and go to state 20
-
-    MINUS     [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
-
-    stmts       go to state 126
-    stmt        go to state 22
-    flow        go to state 23
-    declare     go to state 24
-    assignment  go to state 25
-    whether     go to state 26
-    when        go to state 27
-    from        go to state 28
-    expr        go to state 29
-    value       go to state 30
-    list        go to state 31
-    return      go to state 32
-    funcall     go to state 34
+    '}'  shift, and go to state 126
 
 
 State 121
 
-   25 from: FROM '[' declare TO expr STEP expr • ']' '{' stmts '}'
-   32 expr: expr • PLUS expr
-   33     | expr • MINUS expr
-   34     | expr • MUL expr
-   35     | expr • DIV expr
-   36     | expr • POW expr
-
-    PLUS   shift, and go to state 56
-    MINUS  shift, and go to state 57
-    MUL    shift, and go to state 58
-    DIV    shift, and go to state 59
-    POW    shift, and go to state 60
-    ']'    shift, and go to state 127
-
-
-State 122
-
-   23 when: WHEN '[' condition ']' '{' stmts '}' •
-
-    $default  reduce using rule 23 (when)
-
-
-State 123
-
-   24 when: WHEN '{' stmts '}' UNTIL '[' condition • ']'
-   27 condition: condition • AND condition
-   28          | condition • OR condition
-
-    AND  shift, and go to state 90
-    OR   shift, and go to state 91
-    ']'  shift, and go to state 128
-
-
-State 124
-
-   21 whether: WHETHER '[' condition ']' THEN ':' stmts •
-   22        | WHETHER '[' condition ']' THEN ':' stmts • OTHERWISE ':' stmts
-
-    OTHERWISE  shift, and go to state 129
-
-    $default  reduce using rule 21 (whether)
-
-
-State 125
-
-   57 ufunction: DEFINE ID '(' ')' '{' stmts '}' •
-
-    $default  reduce using rule 57 (ufunction)
-
-
-State 126
-
-   56 ufunction: DEFINE ID '(' symlist ')' '{' stmts • '}'
-
-    '}'  shift, and go to state 130
-
-
-State 127
-
-   25 from: FROM '[' declare TO expr STEP expr ']' • '{' stmts '}'
-
-    '{'  shift, and go to state 131
-
-
-State 128
-
-   24 when: WHEN '{' stmts '}' UNTIL '[' condition ']' •
-
-    $default  reduce using rule 24 (when)
-
-
-State 129
-
-   22 whether: WHETHER '[' condition ']' THEN ':' stmts OTHERWISE • ':' stmts
-
-    ':'  shift, and go to state 132
-
-
-State 130
-
-   56 ufunction: DEFINE ID '(' symlist ')' '{' stmts '}' •
-
-    $default  reduce using rule 56 (ufunction)
-
-
-State 131
-
-   25 from: FROM '[' declare TO expr STEP expr ']' '{' • stmts '}'
+   57 ufunction: DEFINE ID '(' symlist ')' '{' • stmts '}'
 
     FROM       shift, and go to state 4
     WHEN       shift, and go to state 5
@@ -2112,10 +1995,10 @@ State 131
     '['        shift, and go to state 19
     '('        shift, and go to state 20
 
-    MINUS     [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
+    MINUS     [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
 
-    stmts       go to state 133
+    stmts       go to state 127
     stmt        go to state 22
     flow        go to state 23
     declare     go to state 24
@@ -2130,9 +2013,45 @@ State 131
     funcall     go to state 34
 
 
-State 132
+State 122
 
-   22 whether: WHETHER '[' condition ']' THEN ':' stmts OTHERWISE ':' • stmts
+   26 from: FROM '[' declare TO expr STEP expr • ']' '{' stmts '}'
+   33 expr: expr • PLUS expr
+   34     | expr • MINUS expr
+   35     | expr • MUL expr
+   36     | expr • DIV expr
+   37     | expr • POW expr
+
+    PLUS   shift, and go to state 57
+    MINUS  shift, and go to state 58
+    MUL    shift, and go to state 59
+    DIV    shift, and go to state 60
+    POW    shift, and go to state 61
+    ']'    shift, and go to state 128
+
+
+State 123
+
+   24 when: WHEN '[' condition ']' '{' stmts '}' •
+
+    $default  reduce using rule 24 (when)
+
+
+State 124
+
+   25 when: WHEN '{' stmts '}' UNTIL '[' condition • ']'
+   28 condition: condition • AND condition
+   29          | condition • OR condition
+
+    AND  shift, and go to state 91
+    OR   shift, and go to state 92
+    ']'  shift, and go to state 129
+
+
+State 125
+
+   22 whether: WHETHER '[' condition ']' THEN ':' '{' • stmts '}'
+   23        | WHETHER '[' condition ']' THEN ':' '{' • stmts '}' OTHERWISE ':' '{' stmts '}'
 
     FROM       shift, and go to state 4
     WHEN       shift, and go to state 5
@@ -2150,8 +2069,89 @@ State 132
     '['        shift, and go to state 19
     '('        shift, and go to state 20
 
-    MINUS     [reduce using rule 42 (value)]
-    $default  reduce using rule 42 (value)
+    MINUS     [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
+
+    stmts       go to state 130
+    stmt        go to state 22
+    flow        go to state 23
+    declare     go to state 24
+    assignment  go to state 25
+    whether     go to state 26
+    when        go to state 27
+    from        go to state 28
+    expr        go to state 29
+    value       go to state 30
+    list        go to state 31
+    return      go to state 32
+    funcall     go to state 34
+
+
+State 126
+
+   58 ufunction: DEFINE ID '(' ')' '{' stmts '}' •
+
+    $default  reduce using rule 58 (ufunction)
+
+
+State 127
+
+   57 ufunction: DEFINE ID '(' symlist ')' '{' stmts • '}'
+
+    '}'  shift, and go to state 131
+
+
+State 128
+
+   26 from: FROM '[' declare TO expr STEP expr ']' • '{' stmts '}'
+
+    '{'  shift, and go to state 132
+
+
+State 129
+
+   25 when: WHEN '{' stmts '}' UNTIL '[' condition ']' •
+
+    $default  reduce using rule 25 (when)
+
+
+State 130
+
+   22 whether: WHETHER '[' condition ']' THEN ':' '{' stmts • '}'
+   23        | WHETHER '[' condition ']' THEN ':' '{' stmts • '}' OTHERWISE ':' '{' stmts '}'
+
+    '}'  shift, and go to state 133
+
+
+State 131
+
+   57 ufunction: DEFINE ID '(' symlist ')' '{' stmts '}' •
+
+    $default  reduce using rule 57 (ufunction)
+
+
+State 132
+
+   26 from: FROM '[' declare TO expr STEP expr ']' '{' • stmts '}'
+
+    FROM       shift, and go to state 4
+    WHEN       shift, and go to state 5
+    WHETHER    shift, and go to state 6
+    RETURN     shift, and go to state 7
+    MINUS      shift, and go to state 10
+    ABS        shift, and go to state 11
+    NUM        shift, and go to state 12
+    BINARY     shift, and go to state 13
+    ROMAN      shift, and go to state 14
+    STR        shift, and go to state 15
+    FUNC       shift, and go to state 16
+    DATA_TYPE  shift, and go to state 17
+    ID         shift, and go to state 18
+    '['        shift, and go to state 19
+    '('        shift, and go to state 20
+
+    MINUS     [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
 
     stmts       go to state 134
     stmt        go to state 22
@@ -2170,20 +2170,89 @@ State 132
 
 State 133
 
-   25 from: FROM '[' declare TO expr STEP expr ']' '{' stmts • '}'
+   22 whether: WHETHER '[' condition ']' THEN ':' '{' stmts '}' •
+   23        | WHETHER '[' condition ']' THEN ':' '{' stmts '}' • OTHERWISE ':' '{' stmts '}'
 
-    '}'  shift, and go to state 135
-
-
-State 134
-
-   22 whether: WHETHER '[' condition ']' THEN ':' stmts OTHERWISE ':' stmts •
+    OTHERWISE  shift, and go to state 135
 
     $default  reduce using rule 22 (whether)
 
 
+State 134
+
+   26 from: FROM '[' declare TO expr STEP expr ']' '{' stmts • '}'
+
+    '}'  shift, and go to state 136
+
+
 State 135
 
-   25 from: FROM '[' declare TO expr STEP expr ']' '{' stmts '}' •
+   23 whether: WHETHER '[' condition ']' THEN ':' '{' stmts '}' OTHERWISE • ':' '{' stmts '}'
 
-    $default  reduce using rule 25 (from)
+    ':'  shift, and go to state 137
+
+
+State 136
+
+   26 from: FROM '[' declare TO expr STEP expr ']' '{' stmts '}' •
+
+    $default  reduce using rule 26 (from)
+
+
+State 137
+
+   23 whether: WHETHER '[' condition ']' THEN ':' '{' stmts '}' OTHERWISE ':' • '{' stmts '}'
+
+    '{'  shift, and go to state 138
+
+
+State 138
+
+   23 whether: WHETHER '[' condition ']' THEN ':' '{' stmts '}' OTHERWISE ':' '{' • stmts '}'
+
+    FROM       shift, and go to state 4
+    WHEN       shift, and go to state 5
+    WHETHER    shift, and go to state 6
+    RETURN     shift, and go to state 7
+    MINUS      shift, and go to state 10
+    ABS        shift, and go to state 11
+    NUM        shift, and go to state 12
+    BINARY     shift, and go to state 13
+    ROMAN      shift, and go to state 14
+    STR        shift, and go to state 15
+    FUNC       shift, and go to state 16
+    DATA_TYPE  shift, and go to state 17
+    ID         shift, and go to state 18
+    '['        shift, and go to state 19
+    '('        shift, and go to state 20
+
+    MINUS     [reduce using rule 43 (value)]
+    $default  reduce using rule 43 (value)
+
+    stmts       go to state 139
+    stmt        go to state 22
+    flow        go to state 23
+    declare     go to state 24
+    assignment  go to state 25
+    whether     go to state 26
+    when        go to state 27
+    from        go to state 28
+    expr        go to state 29
+    value       go to state 30
+    list        go to state 31
+    return      go to state 32
+    funcall     go to state 34
+
+
+State 139
+
+   23 whether: WHETHER '[' condition ']' THEN ':' '{' stmts '}' OTHERWISE ':' '{' stmts • '}'
+
+    '}'  shift, and go to state 140
+
+
+State 140
+
+   23 whether: WHETHER '[' condition ']' THEN ':' '{' stmts '}' OTHERWISE ':' '{' stmts '}' •
+
+    $default  reduce using rule 23 (whether)
