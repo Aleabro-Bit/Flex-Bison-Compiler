@@ -4,7 +4,7 @@
 #include <string.h>
 #include <math.h>
 #include "helper.h"
-/*TODO: RETURN, SCOPE SISTEMARE IL PARSER */
+/*TODO: RETURN, E SISTEMARE IL PARSER */
 int yydebug = 0;
 extern FILE *yyin;
 extern int yylineno;
@@ -44,14 +44,15 @@ int yylex();
 %left MUL DIV
 %nonassoc ABS UMINUS
 
-%start START
+%start S
 %%
+S: START { print_ast($1, 0, " ");  }
 
-START: /* nothing */
-    | START stmts EOL {$$ = newast('L', $1, $2); val_t result = eval($2); print_ast($2, 0, " ");    }
-    | START ufunction EOL
-    | START error EOL { yyerrok; printf("> "); }
-    | START EOL  { printf("> "); }
+START: /* nothing */ { $$ = NULL; }
+    | START stmts  {$$ = newast('L', $1, $2); eval($2);  }
+    | START ufunction  { $$ = newast('L', $1, $2); eval($2); }
+    | START error  { yyerrok; printf("> "); }
+    | START   { printf("> "); $$ = $1; }
     ;
 stmts: 
      stmt ';' stmts { if ($3 == NULL) 
@@ -81,17 +82,11 @@ flow:
     | from
     ;
 declare: DATA_TYPE ID init {
-     struct symbol *sym = lookup($2->name);
-     if (sym->type != 0) {
-         yyerror("Variable '%s' already declared", $2->name);
-     } else {
-         sym->type = $1; // Assegna il tipo dalla regola DATA_TYPE
-     }
-     struct ast *declare = newdeclare(sym, NULL, NULL);
-     struct ast *assign = newasgn(sym, $3);
-     $$ = newast('L', declare, assign);
+        struct ast *declare = newdeclare($2);
+        $2->type = $1;
+        struct ast *assign = newasgn($2, $3);
+        $$ = newast('L', declare, assign);
     }
-
     ;
 init: ASSIGN expr { $$ = $2; }
     | { $$ = NULL; }
@@ -151,10 +146,10 @@ explist: expr
 symlist: ID          { $$ = newsymlist($1, NULL); }
     | ID ',' symlist { $$ = newsymlist($1, $3); }
     ;
-return: RETURN expr ';' { $$ = newast('R', $2, NULL); } //TODO: add return
+return: RETURN expr  { $$ = newast('R', $2, NULL); } //TODO: add return
     ;
-ufunction: DEFINE  ID '(' symlist ')' '{' stmts '}' { dodef($2,$4,$7); printf("Function %s defined\n", $2->name); }
-    | DEFINE  ID '('  ')' '{' stmts '}' { dodef($2,NULL,$6); printf("Function %s defined\n", $2->name); }
+ufunction: DEFINE  ID '(' symlist ')' '{' stmts '}' { dodef($2,$4,$7); $$ = newdeclare($2);/* printf("Function %s defined\n", $2->name);*/ }
+    | DEFINE  ID '('  ')' '{' stmts '}' { dodef($2,NULL,$6); /*printf("Function %s defined\n", $2->name);*/ }
     ;
 funcall: ID '(' explist ')' { $$ = newcall($1, $3); }
     | FUNC '(' explist ')' { $$ = newfunc($1, $3); }
@@ -174,6 +169,7 @@ int main(int argc, char **argv) {
             perror(argv[i]);
             return (1);
         }
+        yyin = f;
         yyparse();
         fclose(f);
     }

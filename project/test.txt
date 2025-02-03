@@ -1,0 +1,12 @@
+define myFunc(x) { 
+    num k = x^2;
+    x*2+3;
+    k = k*(x+2);
+    print(k);
+    return k;
+    print(k);
+     
+}
+
+num n = myFunc(5);
+print(n);

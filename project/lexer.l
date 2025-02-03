@@ -95,12 +95,13 @@ ROM 0(M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*))
 "---".*\n    {}
 
 {ID} {
-    yylval.s = lookup(yytext);
+    yylval.s = calloc(1, sizeof(struct symbol));
+    yylval.s->name = strdup(yytext);
     return ID;
 }
 
-[ \t]+           { ; } // [ \t\n]+
-\n      {return EOL;}
+[ \t\n]+           { ; } // [ \t\n]+
+
 .                  { return *yytext; }
 %%
 

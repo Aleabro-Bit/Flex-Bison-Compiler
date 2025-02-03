@@ -5,6 +5,8 @@
 # include <math.h>
 # include "helper.h"
 
+static int return_flag = 0; // Flag to indicate a return statement
+
 /* Build an AST */
 struct ast *newast(int nodetype, struct ast *l, struct ast *r) {
     struct ast *a = (struct ast *)malloc(sizeof(struct ast));
@@ -40,9 +42,7 @@ struct ast *newcmp(int cmptype, struct ast *l, struct ast *r)
 }
 
 /* build a declaration node */
-struct ast *newdeclare(struct symbol *name, struct symlist *args, struct ast *body) {
-    name->syms = args;
-    name->func = body;
+struct ast *newdeclare(struct symbol *name) {
     struct ast *a = newast('D', NULL, NULL);
     a->data.sym = name;
     return a;
@@ -112,19 +112,6 @@ struct ast *newfor(struct ast *init, struct ast *cond, struct ast *step, struct 
     fornode->data.flow.cond = cond;     // Condizione
     fornode->r = body_with_step;        // Corpo + Step
     return fornode;
-}
-
-/* build a return AST node */
-struct ast *newreturn(int nodetype, struct ast *value) {
-    struct ast *node = malloc(sizeof(struct ast));
-    if (!node) {
-        yyerror("out of space");
-        exit(1);
-    }
-    node->nodetype = nodetype;  
-    node->l = value;       
-    node->r = NULL;        
-    return node;
 }
 
 /* build a string AST node */
@@ -267,7 +254,7 @@ static val_t callbuiltin(struct ast *a)
         return (val_t){.type = 1, .data.number = 0.0}; // Default return
         */
         case B_input: {
-            char buffer[1024]; // Buffer for input of up to 1024 characters
+        char buffer[1024]; // Buffer for input of up to 1024 characters
 
         // Print the prompt
         if (v.type == 2 && v.data.string) {
@@ -321,13 +308,13 @@ static val_t callbuiltin(struct ast *a)
             yyerror("Unknown built-in function %d", functype);
             return result = (val_t){.type = 1, .data.number = 0.0};
  }
+    return result;
 }
 
 static val_t calluser(struct ast *a) {
-    struct symbol *fn = a->data.sym; /* Name of the function */
-    struct symlist *sl; /* Dummy arguments */
+    struct symbol *fn = lookup(a->data.sym->name); /* Name of the function */
+    struct symlist *sl = fn->syms; /* Dummy arguments */
     struct ast *args = a->l; /* Real arguments */
-    val_t *oldval, *newval; /* saved values of the arguments */
     val_t v = {0}; 
     int nargs, i;
 
@@ -336,57 +323,51 @@ static val_t calluser(struct ast *a) {
         return v = (val_t){.type = 1, .data.number = 0.0};
     }
 
-    /* Count number of arguments */
     sl = fn->syms;
     for (nargs = 0; sl; sl = sl->next)
         nargs++;
 
-    /* Save values */
-    oldval = (val_t *)malloc(nargs * sizeof(val_t));
-    newval = (val_t *)malloc(nargs * sizeof(val_t));
-    if (!oldval || !newval) {
-        yyerror("Out of space in %s", fn->name);
-        return v = (val_t){.type = 1, .data.number = 0.0};
-    }
-
+    val_t vals[nargs];
     /* Evaluate arguments */
     for (i = 0; i < nargs; i++) {
         if (!args) {
             yyerror("Too few args in call to %s", fn->name);
-            free(oldval);
-            free(newval);
             return v = (val_t){.type = 1, .data.number = 0.0};
         }
         if (args->nodetype == 'L') { /* If it's a list node */
-            newval[i] = eval(args->l);
+            vals[i] = eval(args->l);
             args = args->r;
         } else { /* End of list */
-            newval[i] = eval(args);
+            vals[i] = eval(args);
             args = NULL;
         }
     }
-    /* Save old values and assign new values*/
+    push_scope();
     sl = fn->syms;
     for (i = 0; i < nargs; i++) {
         struct symbol *s = sl->sym;
-        oldval[i].data.number = s->value; /* Save old value */
-        s->value = newval[i].data.number; /* Assign new value */
+        struct symbol *x = declare(s->name);
+        if (vals[i].type == 2) { // String
+            x->string = strdup(vals[i].data.string);
+            x->type = 2;
+        } else if (vals[i].type == 3) { // List
+            x->list = vals[i].data.list;
+            x->type = 3;
+        } else 
+            x->type = 1;
+        x->value = vals[i].data.number;
         sl = sl->next;
     }
-    free(newval);
-
     /* Evaluate function */
+    return_flag = 0;
     v = eval(fn->func);
-
-    /* Recover original value of arguments */
-    sl = fn->syms;
-    for (i = 0; i < nargs; i++) {
-        struct symbol *s = sl->sym;
-        s->value = oldval[i].data.number;
-        sl = sl->next;
+    if (return_flag) {
+        return_flag = 0; // Reset flag dopo l'uscita dalla funzione
+        pop_scope();
+        return v;
     }
-    free(oldval);
 
+    pop_scope();
     return v;
 }
 
@@ -400,7 +381,11 @@ val_t eval(struct ast *a)
 
     if(!a) {
     yyerror("internal error, null eval");
+    return v;
     exit(1);
+    }
+    if(return_flag) {
+        return v;
     }
 
     switch(a->nodetype) {
@@ -416,7 +401,7 @@ val_t eval(struct ast *a)
             break;
         /* name reference */
         case 'N': 
-            struct symbol *sym = a->data.sym;
+            struct symbol *sym = lookup(a->data.sym->name);
             if (sym->type == 2) { //string
                 v.type = 2;
                 v.data.string = strdup(sym->string);
@@ -432,12 +417,20 @@ val_t eval(struct ast *a)
             break;
         /* declaration */
         case 'D':
-            //Variable declaration is handled during parsing; nothing to be done here
+            struct symbol *s = declare(a->data.sym->name);
+            *s = *(a->data.sym); // Copy the symbol
             break;
+        /* retrun */
+        case 'R':
+        return_flag = 1;  
+        if (a->l){
+        v = eval(a->l);
+        }
+        else return v; 
         /* assignment */
         case '=': 
             {
-            struct symbol *sym = a->data.sym; // Symbol being assigned
+            struct symbol *sym = lookup(a->data.sym->name); // Symbol being assigned
 
             if (a->l == NULL) {
                 
@@ -462,6 +455,10 @@ val_t eval(struct ast *a)
             }
             
             val_t val = eval(a->l);         // Evaluate the expression on the left-hand side
+            /* Treat numeric data-types equally*/
+            if ((sym->type == 6 || sym->type == 7) && val.type == 1) {
+                val.type = sym->type;
+            }
             // Handle assignment from another variable
             if (sym->type != val.type && sym->type != 3) {
                 yyerror("Type mismatch: cannot assign type %d to variable '%s' of type %d",
@@ -476,7 +473,7 @@ val_t eval(struct ast *a)
                 return v = (val_t){.type = 1, .data.number = 0.0}; 
             }
             // Handle numeric assignment (constant, variable, or expression)
-            if (sym->type == 1 || sym->type == 6 || sym->type == 7) {
+            if (sym->type == 1 || sym->type == 6 || sym->type == 7 ) {
                 v.type = 1;
                 sym->value = val.data.number;
                 v.data.number = sym->value;
@@ -487,7 +484,7 @@ val_t eval(struct ast *a)
                 v.type = sym->type;
                 v.data.string = strdup(sym->string);
             }
-                else if (sym->type == 3) {
+            else if (sym->type == 3) {
                 if (val.type == 3 && val.data.list) { //list already declared
                     sym->list = val.data.list; 
                 }
@@ -618,14 +615,12 @@ val_t eval(struct ast *a)
         /* null expressions allowed in the grammar, so check for them */
         /* if/then/else */
         case 'I':
-            push_scope(); // Push a new scope
             val_t cond_val = eval(a->data.flow.cond);
             if (cond_val.data.number != 0) { 
                 v = a->data.flow.tl ? eval(a->data.flow.tl) : (val_t){.type = 1, .data.number = 0.0};
             } else {
                 v = a->data.flow.el ? eval(a->data.flow.el) : (val_t){.type = 1, .data.number = 0.0};
             } 
-            pop_scope(); // Pop the scope
             break;
         /* while/do */
         case 'W':
@@ -675,7 +670,7 @@ val_t eval(struct ast *a)
             }
         break;
         case 'F': v = callbuiltin(a); break;
-        case 'C': push_scope(); v = calluser(a); pop_scope(); break;
+        case 'C':  v = calluser(a);  break;
         default: printf("internal error: bad node %c\n", a->nodetype);
     }
     return v;
@@ -688,16 +683,21 @@ void dodef(struct symbol *name, struct symlist *syms, struct ast *func)
  if(name->func) treefree(name->func);
  name->syms = syms;
  name->func = func;
+ name->type = 3; // TODO: Add a new type for functions
 }
 
 /* Error reporting function */
 void yyerror(const char *s, ...) {
     va_list ap;
     va_start(ap, s);
-    fprintf(stderr, "%d: Error: ", 1);
+    fprintf(stderr, "%d: Error: ", yylineno);
     vfprintf(stderr, s, ap);
     fprintf(stderr, "\n");
     va_end(ap);
+        if (feof(yyin)) {
+        fprintf(stderr, "Parsing stopped due to errors in file.\n");
+        exit(1);
+    }
 }
 
 void print_val(val_t val) {
@@ -733,15 +733,16 @@ void print_ast(struct ast *node, int depth, char *prefix) {
         case 'K': printf(", Value: %f\n", node->data.number);break;
         /* Variable reference*/
         case 'N': 
-            if (node->data.sym->type == 2) { // String variable
-                printf(", Variable: %s, Value (string): %s\n", node->data.sym->name, node->data.sym->string);
-            } else if (node->data.sym->type == 3) { // List variable
-                printf(", Variable: %s, Value (list): ", node->data.sym->name);
-                print_list(node->data.sym->list);
+            struct symbol *sym = lookup(node->data.sym->name);
+            if (sym->type == 2) { // String variable
+                printf(", Variable: %s, Value (string): %s\n",sym->name, sym->string);
+            } else if (sym->type == 3) { // List variable
+                printf(", Variable: %s, Value (list): ", sym->name);
+                print_list(sym->list);
                 printf("\n");  
             }
             else { // Numeric variable
-                printf(", Variable: %s, Value (number): %f\n", node->data.sym->name, node->data.sym->value);
+                printf(", Variable: %s, Value (number): %f\n", sym->name, sym->value);
             }
         break;
         /*Assignment*/
@@ -752,8 +753,8 @@ void print_ast(struct ast *node, int depth, char *prefix) {
         case 'C': printf(", User Function: %s\n", node->data.sym->name);break;
         /* String literal */
         case 'S': printf(", String: %s\n", node->data.s);break;
-        /* Arithmetic operations*/
-
+        /* Return */
+        case 'R': printf(" (Return)\n"); break;
         /* If/else */
         case 'I': printf(" (If/Else)\n");break;
         /*While loop*/

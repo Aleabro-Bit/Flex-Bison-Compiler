@@ -4,6 +4,7 @@
 #define MAX_SCOPE_DEPTH 128
 
 extern int yylineno; /* from lexer */
+extern FILE *yyin; 
 void yyerror(const char *s, ...);
 
 typedef struct value {
@@ -77,6 +78,7 @@ struct ast {
 
 /* Symbol table functions */
 struct symbol *lookup(char*);
+struct symbol *declare(char*);
 struct symlist *newsymlist(struct symbol *sym, struct symlist *next);
 void symlistfree(struct symlist *sl);
 
@@ -87,7 +89,7 @@ struct ast *newfunc(int functype, struct ast *l);
 void print_symtab();
 
 struct ast *newcall(struct symbol *s, struct ast *l);
-struct ast *newdeclare(struct symbol *name, struct symlist *args, struct ast *body);
+struct ast *newdeclare(struct symbol *name);
 struct ast *newref(struct symbol *s);
 struct ast *newasgn(struct symbol *s, struct ast *v);
 struct ast *newnum(double d);
@@ -120,8 +122,9 @@ val_t count_char(val_t v);
 
 /* Scope*/
 typedef struct scope {
-    struct symbol **symbols;  // Array di puntatori ai simboli locali
-    int symbol_count;
+    struct symbol *symtab;  
+    int symtab_size;
+    int symtab_count;
 } scope_t;
 
 void push_scope();
