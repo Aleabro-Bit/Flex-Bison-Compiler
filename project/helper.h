@@ -51,6 +51,7 @@ enum bifs { /* built-in functions */
     B_get,
     B_input,
     B_split,
+    B_casual,
    /* B_get2D, */
     B_count_char
     
@@ -100,6 +101,8 @@ struct ast *newfor(struct ast *init, struct ast *cond, struct ast *inc, struct a
 void dodef(struct symbol *name, struct symlist *syms, struct ast *stmts);
 /* evaluate an AST */
 val_t eval(struct ast *);
+/* optimize the AST */
+void optimize_ast(struct ast *node);
 /* delete and free an AST */
 void treefree(struct ast *);
 void print_ast(struct ast *node, int depth, char *prefix);

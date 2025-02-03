@@ -23,14 +23,14 @@ ROM 0(M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*))
 
 %%
 
-"define"        { return DEFINE; } // Define keyword
-"return"        { return RETURN; }
-"whether"       { return WHETHER; } // If keyword
-"then"          { return THEN; } // If keyword
-"otherwise"     { return OTHERWISE; } // Else keyword
-"when"          { return WHEN; } // While keyword
-"until"         { return UNTIL; } // While keyword
-"from"          { return FROM; } // For keyword
+"define"        { return DEFINE; }      // Define keyword
+"give_back"     { return RETURN; }      // Return keyword
+"whether"       { return WHETHER; }     // If keyword
+"then"          { return THEN; }        // If keyword
+"otherwise"     { return OTHERWISE; }   // Else keyword
+"when"          { return WHEN; }        // While keyword
+"until"         { return UNTIL; }       // Do keyword
+"from"          { return FROM; }        // For keyword
 "to"            { return TO; }
 
 "num"   { yylval.dt = 1; return DATA_TYPE; }
@@ -45,6 +45,7 @@ ROM 0(M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*))
 "*"     return(MUL);
 "/"     return(DIV);
 "^"     return(POW);
+"%"     return(MOD);
 "="     return(ASSIGN);
 "!>"    return(STEP);
 "|"     return(ABS);
@@ -74,6 +75,7 @@ ROM 0(M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*))
 "input"         { yylval.fn = B_input; return FUNC;}
 "split"         { yylval.fn = B_split; return FUNC;}
 "count_char"    { yylval.fn = B_count_char; return FUNC;}
+"casual"        { yylval.fn = B_casual; return FUNC;}
 
 
 [,:{}=()~;]	{ yylval.st = strdup(yytext); return *yytext;}
@@ -109,7 +111,7 @@ void init_string_buffer() {
     free_string_buffer(); // Free initialized buffer
     string_buffer = malloc(1);
     if (!string_buffer) {
-        fprintf(stderr, "Errore di memoria: impossibile allocare il buffer della stringa.\n");
+        fprintf(stderr, "Error impossible to allocate the buffer\n");
         exit(1);
     }
     string_buffer[0] = '\0';
@@ -119,7 +121,7 @@ void init_string_buffer() {
 void add_string(char ch) {
     string_buffer = realloc(string_buffer, string_buffer_len + 2);
     if (!string_buffer) {
-        fprintf(stderr, "Errore di memoria: impossibile espandere il buffer della stringa.\n");
+        fprintf(stderr, "Error in memory: impossible to expand the buffer.\n");
         exit(1);
     }
     string_buffer[string_buffer_len++] = ch;

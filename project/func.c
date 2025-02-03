@@ -18,10 +18,10 @@
 
 /* print built in function */
 void print_func(struct ast *arg) {            
-struct ast *current = arg; // Nodo attuale
+struct ast *current = arg; 
 
     while (current) {  
-        val_t value = eval(current); // Valuta il nodo sinistro
+        val_t value = eval(current); 
 
         if (value.type == 1) {
             printf("%g", value.data.number);
@@ -33,15 +33,15 @@ struct ast *current = arg; // Nodo attuale
             yyerror("Unsupported type in print");
         }
 
-        // Se ci sono altri argomenti, aggiunge uno spazio tra di loro
+        //separate space between arguments
         if (current->r) {
             printf(" ");
         }
 
-        current = current->r; // Passa al prossimo argomento
+        current = current->r; // Next argument
     }
 
-    printf("\n"); // Nuova riga alla fine
+    
 }
 
 /* Returns the size of a list */

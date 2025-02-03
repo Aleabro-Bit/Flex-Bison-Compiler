@@ -3,6 +3,7 @@
 # include <stdarg.h>
 # include <string.h>
 # include <math.h>
+# include <time.h>
 # include "helper.h"
 
 static int return_flag = 0; // Flag to indicate a return statement
@@ -144,6 +145,7 @@ void treefree(struct ast *a)
         case '^':
         case '&':
         case 'O':
+        case '%':
         case '1': case '2': case '3': case '4': case '5': case '6': 
         case 'L':
             treefree(a->r);
@@ -204,6 +206,10 @@ static val_t callbuiltin(struct ast *a)
             return result;
         case B_tan:
             result.data.number = tan(v.data.number);
+            return result;
+        case B_casual:
+            srand(time(NULL));
+            result.data.number = rand() % (int)v.data.number;
             return result;
         case B_size:
             if (v.type == 3) { // If it's a list
@@ -531,7 +537,8 @@ val_t eval(struct ast *a)
         case '-': 
         case '*': 
         case '/': 
-        case '^': {
+        case '^':
+        case '%': {
             val_t left = eval(a->l);
             val_t right = eval(a->r);
 
@@ -549,6 +556,7 @@ val_t eval(struct ast *a)
                 case '-': v.data.number = left.data.number - right.data.number; break;
                 case '*': v.data.number = left.data.number * right.data.number; break;
                 case '/': v.data.number = left.data.number / right.data.number; break;
+                case '%': v.data.number = fmod(left.data.number, right.data.number); break;
                 case '^': v.data.number = pow(left.data.number, right.data.number); break;
             }
             break;
@@ -718,6 +726,35 @@ void print_val(val_t val) {
             break;
     }
 }
+
+void optimize_ast(struct ast *node) {
+        if (!node) return;
+
+    // Optimize subtrees
+    optimize_ast(node->l);
+    optimize_ast(node->r);
+
+    // Constant Folding
+    if (node->nodetype == '+' || node->nodetype == '-' || node->nodetype == '*' || 
+        node->nodetype == '/' || node->nodetype == '^' || node->nodetype == '%') {
+        
+        if (node->l && node->r && node->l->nodetype == 'K' && node->r->nodetype == 'K') {
+            val_t result = eval(node); 
+            
+            node->nodetype = 'K';
+            node->data.number = result.data.number;
+
+            free(node->l);
+            free(node->r);
+            node->l = node->r = NULL;
+        }
+    }
+
+    if (node->nodetype == 'I' && node->data.flow.cond->nodetype == 'K') { //cancel dead code
+            struct ast *newBranch = node->data.flow.cond->data.number ? node->data.flow.tl : node->data.flow.el;
+            *node = *newBranch;
+        }
+    }
 
 /* recursive function to print the abstract syntax tree */
 void print_ast(struct ast *node, int depth, char *prefix) {

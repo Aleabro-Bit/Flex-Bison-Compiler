@@ -1,0 +1,20 @@
+list choiches = [<<Rock>>,<<Paper>>,<<Scissors>>,<<Lizard>>,<<Spock>>];
+num usr_win = 0;
+num cpu_win = 0;
+
+define get_winner(player, cpu){
+    whether[player == cpu] then: { return; }
+    whether[(player == 0 && (computer == 2 || computer == 3)) || 
+        (player == 1 && (computer == 0 || computer == 4)) || 
+        (player == 2 && (computer == 1 || computer == 3)) || 
+        (player == 3 && (computer == 1 || computer == 4)) || 
+        (player == 4 && (computer == 0 || computer == 2))]
+        then: { return 1; }
+        Otherwise return -1;
+}
+
+define get_choice_index(input){
+    from [num i = 0 to size(choiches)-1 !> 1] {
+        
+    }
+}
