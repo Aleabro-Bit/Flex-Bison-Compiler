@@ -1,0 +1,110 @@
+/-- this is a comment
+    on multiple lines --/
+
+--- this is a comment on a single line
+
+--- variable declaration
+num a = 10.5;   ---defines a number variable, it can be assigned both integer and decimal numbers
+roman r = 0MCXXII;   ---defines a roman number, a 0 is required before the numbers to identify them as romans. The result is converted to a number
+binary b = 0B1011001;    ---defines a binary number, 0B is required before the numbers to identify the binary sequence. 
+
+--- Assigns between numbers are allowed
+a = b;
+b = r;
+
+/-- str is used to declare string variables.a string is declared between << >>.
+    Strings can be concatenated with a + between them
+    special characters: #j for tab, #k for newline --/
+str string = <<hello#j>> + <<world!#k>>;  
+
+/-- This language supports the data structure of lists. Lists are declared with
+    the keyword list. Different kind of datatype can be added to the same list.
+    Operations can be done when declaring a list and the result is stored in the list ---/
+list l = [1.5,3^0III,<<hello>> + <<world!>>,10];
+--- '+' allows to concatenate lists
+l = 2 + l;  --- adds 2 at the beginning of the list
+l = l + 2;  --- adds 2 at the end of the list
+l = l + l;  --- concatenates two lists
+
+/-- operators 
++       allows operations between strings and lists
+-       difference / unary minus
+*       multiplication
+/       division
+^       raising to a power
+@       remainder
+|a|     module
+--/
+
+/-- logical operators
+and
+or
+not
+--/
+
+/-- Comparison operations 
+>
+<
+<=
+>=
+<>  no equals
+==
+--/
+
+
+/-- print function allows to concatenate many arguments separated by a comma
+    if they are variables it prints their result unless they are between << >> --/
+print(a,b,r,<<goodnight>>,l,sqrt(5),<<a#k>>);
+
+/-- control flow
+--- WHETHER/OTHERWISE SYNTAX
+whether [--- condition ---] then: {
+    --- statements ;
+} otherwise: {
+    --- statements ;
+}
+--- WHILE/UNTIL SYNTAX
+--- checks the condition first
+when [--- condition ---]{
+    --- statements ---;
+}
+--- checks the condition later
+when {
+    --- statements ---;
+} until [--- condition ---]
+--- FROM SYNTAX
+--- the declaration of the variable should be done in
+    the declaration of the from block, to is the upper bound (inclusive)
+o   f the loop and !> is the step which increases the index 
+from [num i = 0 to n !> q] {
+    print(i);
+}
+--/
+
+--- user function
+/-- to declare a function it's not necessary to specify the 
+    return type or the data type of the arguments 
+    the 'define' keyword is used to declare a function --/
+
+    define set(n){
+        give_back n;    ---give_back returns the value of the function
+    }
+
+/-- built in functions
+sqrt(num)          --- returns the square root of a number
+exp(num)           --- returns e raised to a power of a number
+log(num)           --- returns the logarithm of a number
+fact(num)          --- returns the factorial of a number
+sin(num)           --- return the sine of a number
+cos(num)           --- returns the cosine of a number
+tan(num)           --- returns the tangent of a number
+size(list)         --- returns the number of elements in a list
+get(list,index)    --- returns an element of a list at a given index
+input(<<text>>)    --- used for user input, the argument is displayed to the terminal and the 
+                   --- the text prompted can be stored as a string or a value if convertable
+split(str)         --- separates a string into words and returns the result as a list
+count_char(str)    --- counts the number of characters in a string
+casual(num)        --- generates a number in the range of a given number
+--/
+
+

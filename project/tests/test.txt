@@ -1,0 +1,17 @@
+num n = input(<<insert a value for the test>>);
+print(n,<<#k>>);
+
+define divisible(a,b) {
+    
+    num temp = a;
+    temp = temp - b;
+    from[num i = 0 to a !> 1]{
+        give_back temp;
+    }
+    
+
+}
+list a = [1,2,3];
+
+print(divisible(10,2),<<#k>>);
+print(a);

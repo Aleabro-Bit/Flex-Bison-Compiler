@@ -1,0 +1,32 @@
+str s = input(<<insert a phrase to frame>>);
+num max_l = 0;
+--- separate the string into words
+list l = split(s);
+from [num i = 0 to size(l)-1 !> 1] {
+    str word = get(l,i);
+    num count = count_char(word);
+    whether [count>max_l] then: {
+        max_l = count;
+    }
+}
+--- print the border
+from [num i = 0 to max_l+4 !> 1] {
+    print(<<*>>);
+}
+print(<<#k>>);
+from [num i = 0 to size(l)-1 !> 1]{
+    str word = get(l, i);
+    num spaces = max_l - count_char(word);  --- Calculate the extra spaces needed
+    print(<<* >>, word);
+
+    from [num j = 0 to spaces-1 !> 1] {  --- Add spaces to align words
+        print(<< >>);
+    }
+
+    print(<< *#k>>);
+}
+--- print the border
+from [num i = 0 to max_l+4 !> 1] {
+    print(<<*>>);
+}
+print(<<#k>>);
