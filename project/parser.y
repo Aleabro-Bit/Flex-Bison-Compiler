@@ -46,7 +46,7 @@ int yylex();
 
 %start S
 %%
-S: START { print_ast($1, 0, " "); print_symtab(); }
+S: START { print_ast($1, 0, " ");  }
     
 
 START: /* nothing */    { $$ = NULL; }

@@ -1,35 +1,31 @@
 --- set the value for the test
 num n = input(<<insert a value for the test>>);
 
-define is_divisible(a, b) {
-    num temp = a;
-    from [num i = 0 to a !> 1] {
-        temp = temp - b;
-        whether [temp < 0] then: { give_back 0; }
-        whether [temp == 0] then: { give_back 1; }
-    }
-    give_back 0;
-}
-
-define is_prime(n) {
-    whether [n < 2] then: { give_back 0; }
-    from [num i = 2 to n/i^2-1 !> 1] {
-        whether [is_divisible(n, i) == 1] then: { give_back 0; }
-    }
-    give_back 1;
-}
-
 --- generates a list of numbers from 1 to n
-list numbers ;
+list numbers;
 from [num i = 0 to n !> 1] {
     numbers = numbers + i;
 }
 
 --- filters only prime numbers
-list primes;
+list primes = [0];
 from [num i = 0 to size(numbers)-1 !> 1] {
-    whether [is_prime(get(numbers, i)) == 1] then: {
-        primes = primes + get(numbers, i);
+    num candidate = get(numbers, i);
+    whether [candidate < 2] then: { continue; }
+
+    num is_prime = 1;
+    from [num j = 2 to candidate/j^2-1 !> 1] {
+        num temp = candidate;
+        from [num k = 0 to candidate !> 1] {
+            temp = temp - j;
+            whether [temp < 0] then: { break; }
+            whether [temp == 0] then: { is_prime = 0; break; }
+        }
+        whether [is_prime == 0] then: { break; }
+    }
+
+    whether [is_prime == 1] then: {
+        primes = primes + candidate;
     }
 }
 

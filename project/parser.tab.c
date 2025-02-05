@@ -1515,7 +1515,7 @@ yyreduce:
     {
   case 2: /* S: START  */
 #line 49 "parser.y"
-         { print_ast((yyvsp[0].a), 0, " "); print_symtab(); }
+         { print_ast((yyvsp[0].a), 0, " ");  }
 #line 1520 "parser.tab.c"
     break;
 

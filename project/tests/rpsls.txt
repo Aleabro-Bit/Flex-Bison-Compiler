@@ -1,71 +1,84 @@
-list choiches = [<<rock>>,<<paper>>,<<scissors>>,<<lizard>>,<<spock>>];
+list choices = [<<rock>>, <<paper>>, <<scissors>>, <<lizard>>, <<spock>>];
 num usr_win = 0;
 num cpu_win = 0;
-
-define get_winner(player, cpu){
-    whether[player == cpu] then: { give_back; }
-    whether[(player == 0 and (computer == 2 or computer == 3)) or 
-            (player == 1 and (computer == 0 or computer == 4)) or 
-            (player == 2 and (computer == 1 or computer == 3)) or 
-            (player == 3 and (computer == 1 or computer == 4)) or 
-            (player == 4 and (computer == 0 or computer == 2))]
-        then: { give_back 1; }
-        Otherwise: {give_back -1; }
-}
-
-define get_choice_index(in){
-    print(in);
-    from [num i = 0 to size(choiches)-1 !> 1] {
-        whether [in == get(choiches,i)] then: {
-            print(i);
-            give_back i;
-        }
-    }
-    give_back -1;
-}
-
-define fair() {
-    give_back casual(size(choiches));
-}
-
-define cheat(player_choice){
-    from [num i = 0 to size(choiches)-1 !> 1] {
-        whether [get_winner(i,player_choice) == 1] then: {
-            give_back i;
-        }
-    }
-    give_back fair();
-}
-
 num wins = 0;
 num losses = 0;
 num consecutive_losses = 0;
 
 print(<<Welcome to Rock Paper Scissors Spock>>, <<Lizard#k>>);
-when[1] {
-    str in = input(<<enter you choices here (Rock, Paper, Scissors, Lizard, Spock or Quit):#k>>);
-    num player_choice = get_choice_index(in);
-    print(player_choice);
+when [1] {
+    
+    
     num computer_choice;
-    whether[consecutive_losses >= 2] then: {
-        computer_choice = cheat(player_choice);
-    } Otherwise : {
-        computer_choice = fair;
+    num result;
+    when {
+    num player_choice = -1;
+    str in = input(<<enter your choice here (Rock, Paper, Scissors, Lizard, Spock):#k>>);
+    from [num i = 0 to size(choices)-1 !> 1] {
+        whether [in == get(choices, i)] then: {
+            player_choice = i;
+        }
     }
-    num result = get_winner(player_choice,computer_choice);
-    whether[result == 1] then: {
-        print(<<You won this round>>);
+    } until [player_choice == -1]
+    
+    num random_choice = casual(size(choices));
+    num found = 0;
+    num cheat_choice = random_choice;
+    num i = 0;
+    
+    whether [consecutive_losses >= 2] then: {
+        from [num i = 0 to size(choices)-1 !> 1] {
+            num temp_result = -1;
+            whether [(i == player_choice)] then: {
+                temp_result = 0;
+            }
+            whether [(i == 0 and (player_choice == 2 or player_choice == 3)) or 
+                    (i == 1 and (player_choice == 0 or player_choice == 4)) or 
+                    (i == 2 and (player_choice == 1 or player_choice == 3)) or 
+                    (i == 3 and (player_choice == 1 or player_choice == 4)) or 
+                    (i == 4 and (player_choice == 0 or player_choice == 2))] then: {
+                temp_result = 1;
+            }
+            whether [temp_result == 1 and found == 0] then: {
+                cheat_choice = i;
+                found = 1;
+            }
+        }
+        computer_choice = cheat_choice;
+    } otherwise: {
+        computer_choice = random_choice;
+    }
+
+    print(<<Computer chose: >>, get(choices, computer_choice), <<#k>>);
+    
+    result = -1;
+    whether [player_choice == computer_choice] then: {
+        result = 0;
+    }
+    
+    from [num i = 0 to size(choices)-1 !> 1] {
+        whether [(player_choice == 0 and (computer_choice == 2 or computer_choice == 3)) or 
+                (player_choice == 1 and (computer_choice == 0 or computer_choice == 4)) or 
+                (player_choice == 2 and (computer_choice == 1 or computer_choice == 3)) or 
+                (player_choice == 3 and (computer_choice == 1 or computer_choice == 4)) or 
+                (player_choice == 4 and (computer_choice == 0 or computer_choice == 2))] then: {
+            result = 1;
+        }
+    }
+    
+    whether [result == 1] then: {
+        print(<<You won this round#k>>);
         wins = wins + 1;
         consecutive_losses = consecutive_losses + 1;
     }
-    whether[result == -1] then: {
-        print(<<you lost this round>>);
+    whether [result == -1] then: {
+        print(<<You lost this round#k>>);
         losses = losses + 1;
         consecutive_losses = 0;
     }
-    otherwise: { 
-        print(<<it's a tie>>);
+    whether[result <> 1 and result <> -1] then: {
+        print(<<It's a tie#k>>);
     }
-    print(<<wins>>,wins,<<losses>>,losses);
-
+    
+    print(<<Wins>>, wins, <<Losses>>, losses, <<#k>>);
 }
