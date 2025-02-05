@@ -1,13 +1,17 @@
 
 define divisible(a,b) {
+    print(<<entered function#k>>);
     num temp = a;
     temp = temp - b;
-    from[num i = 0 to a !> 1]{
+    when {
+        print(<<entered while#k>>);
         give_back temp;
-    }
+    } until [temp >= 8]
+        
     give_back temp-5;
 }
 
 num temp = divisible(10,2);
+print(temp);
 
 

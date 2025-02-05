@@ -12,7 +12,7 @@ void free_string_buffer();
 
 %}
 %option noyywrap nounput noinput yylineno case-insensitive
-ID [a-zA-Z][a-zA-Z0-9_]*
+ID [a-zA-Z_][a-zA-Z0-9_]*
 DEC [0-9]+(\.[0-9]+)?
 BIN 0[bB][01]+ 
 ROM 0(M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*))

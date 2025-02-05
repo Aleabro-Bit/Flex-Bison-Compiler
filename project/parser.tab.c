@@ -75,7 +75,7 @@
 #include <math.h>
 #include "helper.h"
 
-int yydebug = 0;
+int yydebug = 1;
 extern FILE *yyin;
 extern int yylineno;
 

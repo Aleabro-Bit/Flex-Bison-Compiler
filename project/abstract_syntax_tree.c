@@ -7,7 +7,6 @@
 # include "helper.h"
 
 static int return_flag = 0; // Flag to indicate a return statement
-
 /* Build an AST */
 struct ast *newast(int nodetype, struct ast *l, struct ast *r) {
     struct ast *a = (struct ast *)malloc(sizeof(struct ast));
@@ -650,11 +649,19 @@ val_t eval(struct ast *a)
         if (a->data.flow.tl && a->data.flow.el) {
             do {
                 v = eval(a->data.flow.tl);
+                if (return_flag){ 
+                    break;
+                } 
             } while (eval(a->data.flow.cond).data.number != 0);
         }
         if(a->data.flow.tl ) {
-            while( eval(a->data.flow.cond).data.number != 0) 
+            while( eval(a->data.flow.cond).data.number != 0) {
                 v = eval(a->data.flow.tl); 
+                 if (return_flag){ 
+                    break;
+                }
+            }
+                
         }
         pop_scope(); // Pop the scope
         break; /* value of last statement is value of while/do */
@@ -664,15 +671,13 @@ val_t eval(struct ast *a)
         push_scope(); // Push a new scope 
         eval(a->l); // Initialize
             while (eval(a->data.flow.cond).data.number != 0) { // Control the condition
-                eval(a->r->l);
-                if (return_flag){
-                    return_flag = 0; // Reset flag 
+                v = eval(a->r->l);
+                if (return_flag){ 
                     break;
                 }
                  // Execute the body
-                eval(a->r->r); // Execute the step
-                if (return_flag){
-                    return_flag = 0; // Reset flag                    
+                v = eval(a->r->r); // Execute the step
+                if (return_flag){                
                     break;
                 }
                
