@@ -9,7 +9,6 @@ State 34 conflicts: 1 reduce/reduce
 State 36 conflicts: 1 shift/reduce
 State 37 conflicts: 1 shift/reduce
 State 38 conflicts: 1 shift/reduce
-State 43 conflicts: 1 shift/reduce
 State 45 conflicts: 1 shift/reduce
 State 47 conflicts: 1 shift/reduce
 State 48 conflicts: 1 shift/reduce
@@ -24,12 +23,6 @@ State 62 conflicts: 1 shift/reduce
 State 63 conflicts: 1 shift/reduce
 State 71 conflicts: 1 shift/reduce
 State 75 conflicts: 1 shift/reduce
-State 79 conflicts: 1 shift/reduce
-State 80 conflicts: 1 shift/reduce
-State 81 conflicts: 1 shift/reduce
-State 82 conflicts: 1 shift/reduce
-State 83 conflicts: 1 shift/reduce
-State 84 conflicts: 6 shift/reduce
 State 85 conflicts: 1 shift/reduce
 State 86 conflicts: 2 shift/reduce
 State 88 conflicts: 1 shift/reduce
@@ -893,9 +886,6 @@ State 43
    39     | expr • MOD expr
    41     | MINUS expr •
 
-    MOD  shift, and go to state 60
-
-    MOD       [reduce using rule 41 (expr)]
     $default  reduce using rule 41 (expr)
 
 
@@ -1536,7 +1526,6 @@ State 79
     DIV  shift, and go to state 58
     MOD  shift, and go to state 60
 
-    MOD       [reduce using rule 34 (expr)]
     $default  reduce using rule 34 (expr)
 
 
@@ -1554,7 +1543,6 @@ State 80
     DIV  shift, and go to state 58
     MOD  shift, and go to state 60
 
-    MOD       [reduce using rule 35 (expr)]
     $default  reduce using rule 35 (expr)
 
 
@@ -1568,9 +1556,6 @@ State 81
    38     | expr • POW expr
    39     | expr • MOD expr
 
-    MOD  shift, and go to state 60
-
-    MOD       [reduce using rule 36 (expr)]
     $default  reduce using rule 36 (expr)
 
 
@@ -1584,9 +1569,6 @@ State 82
    38     | expr • POW expr
    39     | expr • MOD expr
 
-    MOD  shift, and go to state 60
-
-    MOD       [reduce using rule 37 (expr)]
     $default  reduce using rule 37 (expr)
 
 
@@ -1604,7 +1586,6 @@ State 83
     DIV  shift, and go to state 58
     MOD  shift, and go to state 60
 
-    MOD       [reduce using rule 38 (expr)]
     $default  reduce using rule 38 (expr)
 
 
@@ -1618,19 +1599,6 @@ State 84
    39     | expr • MOD expr
    39     | expr MOD expr •
 
-    PLUS   shift, and go to state 55
-    MINUS  shift, and go to state 56
-    MUL    shift, and go to state 57
-    DIV    shift, and go to state 58
-    POW    shift, and go to state 59
-    MOD    shift, and go to state 60
-
-    PLUS      [reduce using rule 39 (expr)]
-    MINUS     [reduce using rule 39 (expr)]
-    MUL       [reduce using rule 39 (expr)]
-    DIV       [reduce using rule 39 (expr)]
-    POW       [reduce using rule 39 (expr)]
-    MOD       [reduce using rule 39 (expr)]
     $default  reduce using rule 39 (expr)
 
 

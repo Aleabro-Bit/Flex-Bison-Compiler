@@ -98,10 +98,10 @@ union YYSTYPE
     char *st;
     char *op;
     struct ast *a;
-    struct symbol *s; // which symbol
+    struct symbol *s;   // which symbol
     struct symlist *sl; // symbol list
-    int fn;          // which function
-    int dt;          // which data type
+    int fn;             // which function
+    int dt;             // which data type
 
 #line 107 "parser.tab.h"
 

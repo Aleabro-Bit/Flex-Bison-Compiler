@@ -148,6 +148,7 @@ void treefree(struct ast *a)
         case '%':
         case '1': case '2': case '3': case '4': case '5': case '6': 
         case 'L':
+        case '[':
             treefree(a->r);
         /* one subtree */
         case '|': case 'M': case 'C': case 'F': case '!':
@@ -340,7 +341,7 @@ static val_t calluser(struct ast *a) {
             yyerror("Too few args in call to %s", fn->name);
             return v = (val_t){.type = 1, .data.number = 0.0};
         }
-        if (args->nodetype == 'L') { /* If it's a list node */
+        if (args->nodetype == '[') { /* If it's a list node */
             vals[i] = eval(args->l);
             args = args->r;
         } else { /* End of list */
@@ -368,7 +369,7 @@ static val_t calluser(struct ast *a) {
     return_flag = 0;
     v = eval(fn->func);
     if (return_flag) {
-        return_flag = 0; // Reset flag dopo l'uscita dalla funzione
+        return_flag = 0; // Reset flag 
         pop_scope();
         return v;
     }
@@ -428,11 +429,12 @@ val_t eval(struct ast *a)
             break;
         /* retrun */
         case 'R':
-        return_flag = 1;  
+          
         if (a->l){
         v = eval(a->l);
         }
-        else return v; 
+        return_flag = 1;
+        return v; 
         /* assignment */
         case '=': 
             {
@@ -498,7 +500,7 @@ val_t eval(struct ast *a)
                 struct list *lst = linked_list_ast(a->l); // Create a list from the AST
                 sym->list = lst; 
                 v.type = sym->type;
-                v.data.list = lst;
+                v.data.list = sym->list;
                 }
                 } 
             break;
@@ -522,7 +524,12 @@ val_t eval(struct ast *a)
             else if (left.type == 3 && right.type != 3) { // Add element to list
             v.type = 3;
             struct list *new_value = linked_list_ast(a->r);
-            v.data.list = concat_lists(left.data.list, new_value);  // Aggiunge il nuovo elemento
+            v.data.list = concat_lists(left.data.list, new_value);  
+            }
+            else if (left.type != 3 && right.type == 3) { // Add element to list
+            v.type = 3;
+            struct list *new_value = linked_list_ast(a->l);
+            v.data.list = concat_lists(new_value, right.data.list);  
             }
             else if (left.type != right.type) {
                 yyerror("Type mismatch in '+' operation");
@@ -610,7 +617,13 @@ val_t eval(struct ast *a)
                 case '1': v.data.number = (left.data.number > right.data.number) ? 1 : 0; break;
                 case '2': v.data.number = (left.data.number < right.data.number) ? 1 : 0; break;
                 case '3': v.data.number = (left.data.number != right.data.number) ? 1 : 0; break;
-                case '4': v.data.number = (left.data.number == right.data.number) ? 1 : 0; break;
+                case '4': 
+                            if (left.type == 2 && right.type == 2) { 
+                                v.data.number = (strcasecmp (left.data.string, right.data.string) == 0) ? 1 : 0; 
+                            } else { 
+                                v.data.number = (left.data.number == right.data.number) ? 1 : 0; 
+                            } 
+                            break;
                 case '5': v.data.number = (left.data.number >= right.data.number) ? 1 : 0; break;
                 case '6': v.data.number = (left.data.number <= right.data.number) ? 1 : 0; break;
                 case 'O': v.data.number = (left.data.number || right.data.number) ? 1 : 0; break;
@@ -651,31 +664,53 @@ val_t eval(struct ast *a)
         push_scope(); // Push a new scope 
         eval(a->l); // Initialize
             while (eval(a->data.flow.cond).data.number != 0) { // Control the condition
-                eval(a->r->l); // Execute the body
+                eval(a->r->l);
+                if (return_flag){
+                    return_flag = 0; // Reset flag 
+                    break;
+                }
+                 // Execute the body
                 eval(a->r->r); // Execute the step
+                if (return_flag){
+                    return_flag = 0; // Reset flag                    
+                    break;
+                }
+               
             }
         pop_scope(); // Pop the scope
         break;
-        
+
+        case '[':
+        {
+             val_t left_val = eval(a->l);
+
+             // If the first element is a list, create a new list
+             if (left_val.type == 3) {
+                 v.type = 3;
+                 v.data.list = linked_list_ast(a->l);
+             } else {
+                 v = left_val;
+             }
+
+             if (a->r ) {
+                 val_t right_val = eval(a->r);
+                 // If both elements are lists, concatenate them
+                 if (left_val.type == 3 && right_val.type == 3) {
+                     v.data.list = concat_lists(left_val.data.list, right_val.data.list);
+                 }
+             }
+         }
+         break;
         /* list of statements */
         case 'L': 
-        val_t left_val = eval(a->l);  
-
-            // If the first element is a list, create a new list
-            if (left_val.type == 3) {
-                v.type = 3;
-                v.data.list = linked_list_ast(a->l);
-            } else {
-                v = left_val; 
-            }
-
-            if (a->r) {
-                val_t right_val = eval(a->r);
-                // If both elements are lists, concatenate them
-                if (left_val.type == 3 && right_val.type == 3) {
-                    v.data.list = concat_lists(left_val.data.list, right_val.data.list);
-                }
-            }
+        if(a->l) {
+            val_t left_val = eval(a->l);
+            v = left_val;
+        }
+        if(a->r && !return_flag) {
+            val_t right_val = eval(a->r);
+            v = right_val;
+        }
         break;
         case 'F': v = callbuiltin(a); break;
         case 'C':  v = calluser(a);  break;
@@ -691,7 +726,7 @@ void dodef(struct symbol *name, struct symlist *syms, struct ast *func)
  if(name->func) treefree(name->func);
  name->syms = syms;
  name->func = func;
- name->type = 3; // TODO: Add a new type for functions
+ name->type = 3; 
 }
 
 /* Error reporting function */
@@ -728,7 +763,7 @@ void print_val(val_t val) {
 }
 
 void optimize_ast(struct ast *node) {
-        if (!node) return;
+    if (!node) return;
 
     // Optimize subtrees
     optimize_ast(node->l);

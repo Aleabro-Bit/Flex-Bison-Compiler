@@ -4,7 +4,7 @@
 #include <string.h>
 #include <math.h>
 #include "helper.h"
-/*TODO: RETURN */
+
 int yydebug = 0;
 extern FILE *yyin;
 extern int yylineno;
@@ -41,12 +41,13 @@ int yylex();
 %nonassoc <fn> CMP
 %right ASSIGN
 %left PLUS MINUS POW
-%left MUL DIV
+%left MUL DIV MOD
 %nonassoc ABS UMINUS
 
 %start S
 %%
-S: START { print_ast($1, 0, " ");  }
+S: START { print_ast($1, 0, " "); print_symtab(); }
+    
 
 START: /* nothing */    { $$ = NULL; }
     | START stmts       {$$ = newast('L', $1, $2); optimize_ast($2); eval($2);  }
@@ -142,15 +143,15 @@ list: '[' ']'         { $$ = NULL; }
     ;
 
 explist: expr
-    | expr ',' explist { $$ = newast('L', $1, $3); }
+    | expr ',' explist { $$ = newast('[', $1, $3); }
     ;
 symlist: ID          { $$ = newsymlist($1, NULL); }
     | ID ',' symlist { $$ = newsymlist($1, $3); }
     ;
-return: RETURN expr  { $$ = newast('R', $2, NULL); } //TODO: add return
+return: RETURN expr  { $$ = newast('R', $2, NULL); } 
     ;
 ufunction: DEFINE  ID '(' symlist ')' '{' stmts '}' { dodef($2,$4,$7); $$ = newdeclare($2);/* printf("Function %s defined\n", $2->name);*/ }
-    | DEFINE  ID '('  ')' '{' stmts '}'             { dodef($2,NULL,$6); /*printf("Function %s defined\n", $2->name);*/ }
+    | DEFINE  ID '('  ')' '{' stmts '}'             { dodef($2,NULL,$6); $$ = newdeclare($2); /*printf("Function %s defined\n", $2->name);*/ }
     ;
 funcall: ID '(' explist ')' { $$ = newcall($1, $3); }
     | FUNC '(' explist ')'  { $$ = newfunc($1, $3); }

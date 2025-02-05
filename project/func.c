@@ -19,10 +19,15 @@
 /* print built in function */
 void print_func(struct ast *arg) {            
 struct ast *current = arg; 
+val_t value;
 
-    while (current) {  
-        val_t value = eval(current); 
-
+    while (current) {
+        if (current->l){  
+         value = eval(current->l); 
+        }
+        else {
+            value = eval(current);
+        }
         if (value.type == 1) {
             printf("%g", value.data.number);
         } else if (value.type == 2) {
@@ -37,11 +42,8 @@ struct ast *current = arg;
         if (current->r) {
             printf(" ");
         }
-
         current = current->r; // Next argument
     }
-
-    
 }
 
 /* Returns the size of a list */
@@ -81,8 +83,8 @@ val_t *get2D(struct list *head, int row, int col) {
     return NULL; // Se gli indici sono fuori dai limiti
 } */
 
-int roman_to_int(const char *roman) {
-    int result = 0;
+double roman_to_int(const char *roman) {
+    double result = 0;
     while (*roman) {
         switch (*roman) {
             case '0': break;
@@ -110,7 +112,6 @@ int roman_to_int(const char *roman) {
 }
 
 val_t split(val_t v) { 
-
     if (v.type != 2) { 
         yyerror("split() expects a string");
         return (val_t){.type = 3, .data.list = NULL}; 
@@ -154,13 +155,13 @@ val_t split(val_t v) {
 
     return (val_t){.type = 3, .data.list = head}; 
 }
+
 /* Create a linked list from an AST structure */
 struct list *linked_list_ast(struct ast *args) {
     struct list *head = NULL;  // Head of the linked list
     struct list *current = NULL;
 
     while (args) {
-        
         struct list *new_node = (struct list *)malloc(sizeof(struct list));
         if (!new_node) {
             yyerror("Out of memory");
@@ -173,6 +174,7 @@ struct list *linked_list_ast(struct ast *args) {
             exit(1);
         }
         val_t result = eval(args);
+        
         if (result.type == 1) { 
             value->type = 1;
             value->data.number = result.data.number;
@@ -194,7 +196,7 @@ struct list *linked_list_ast(struct ast *args) {
         }
         current = new_node;
 
-        if (args->nodetype == 'L') {  
+        if (args->nodetype == '[') {  
             args = args->r;           
         } else {  
             args = NULL;

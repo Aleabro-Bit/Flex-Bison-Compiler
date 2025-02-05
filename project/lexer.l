@@ -10,9 +10,6 @@ void add_string(char ch);
 char *get_string_buffer();
 void free_string_buffer();
 
-void print_token(int token);
-int roman_to_int(const char *roman);
-
 %}
 %option noyywrap nounput noinput yylineno case-insensitive
 ID [a-zA-Z][a-zA-Z0-9_]*
@@ -124,7 +121,8 @@ void add_string(char ch) {
         fprintf(stderr, "Error in memory: impossible to expand the buffer.\n");
         exit(1);
     }
-    string_buffer[string_buffer_len++] = ch;
+    string_buffer[string_buffer_len] = ch;
+    string_buffer_len++;
     string_buffer[string_buffer_len] = '\0'; // Null-terminate
 }
 

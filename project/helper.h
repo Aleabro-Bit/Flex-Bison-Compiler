@@ -108,7 +108,7 @@ void treefree(struct ast *);
 void print_ast(struct ast *node, int depth, char *prefix);
 
 /* Functions */
-int roman_to_int(const char *roman);
+double roman_to_int(const char *roman);
 void print_val(val_t val);
 double factorial(double n);
 void print_func(struct ast *arg);
