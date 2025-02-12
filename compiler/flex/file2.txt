@@ -1,3 +1,0 @@
-Hello world!
-GNU Flex is great.
-1234 5678 90

@@ -1,17 +1,5 @@
-
-define divisible(a,b) {
-    print(<<entered function#k>>);
-    num temp = a;
-    temp = temp - b;
-    when {
-        print(<<entered while#k>>);
-        give_back temp;
-    } until [temp >= 8]
-        
-    give_back temp-5;
+from [num i=0 to 10 !>3] {
+    print(i);
 }
-
-num temp = divisible(10,2);
-print(temp);
-
-
+roman r = 0XXX;
+print(r);
