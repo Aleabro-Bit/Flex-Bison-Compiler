@@ -30,12 +30,11 @@ ROM 0(M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*))
 "from"          { return FROM; }        // For keyword
 "to"            { return TO; }
 
-"num"   { yylval.dt = 1; return DATA_TYPE; }
-"str"   { yylval.dt = 2; return DATA_TYPE; }
-"list"  { yylval.dt = 3; return DATA_TYPE; }
-"void"  { yylval.dt = 5; return DATA_TYPE; }
-"roman" {yylval.dt = 6; return DATA_TYPE; }
-"binary" {yylval.dt = 7; return DATA_TYPE; }
+"num"       { yylval.dt = 1; return DATA_TYPE; }
+"str"       { yylval.dt = 2; return DATA_TYPE; }
+"list"      { yylval.dt = 3; return DATA_TYPE; }
+"roman"     { yylval.dt = 6; return DATA_TYPE; }
+"binary"    { yylval.dt = 7; return DATA_TYPE; }
 
 "+"     return(PLUS);
 "-"     return(MINUS);
@@ -83,10 +82,12 @@ ROM 0(M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*))
 
 "<<" {BEGIN(STRING);}
 <STRING>"#k"	{ add_string('\n'); }
+<STRING>"\\#k"   { add_string('#'); add_string('k'); }
+<STRING>"\\#j"   { add_string('#'); add_string('j'); }
 <STRING>">>"	{ BEGIN(INITIAL); yylval.st = get_string_buffer();  return STR; }
 <STRING>"#j"	{ add_string('\t'); }
 <STRING>"\"\""	{ add_string('"'); }
-<STRING>.	{ add_string(*yytext); }
+<STRING>.	    { add_string(*yytext); }
 
 "/--"	{BEGIN(COMMENT);}
 <COMMENT>"--/"	{BEGIN(INITIAL);}
@@ -99,7 +100,7 @@ ROM 0(M*(CM|CD|D?C*)(XC|XL|L?X*)(IX|IV|V?I*))
     return ID;
 }
 
-[ \t\n]+           { ; } // [ \t\n]+
+[ \t\n]+           { ; } 
 
 .                  { return *yytext; }
 %%

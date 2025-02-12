@@ -35,7 +35,7 @@ int yylex();
 %token <dt> DATA_TYPE
 %token <s> ID
 
-%type <a> expr stmt stmts whether when condition explist  assignment return flow ufunction funcall START declare init value from list
+%type <a> expr stmt stmts whether when condition explist assignment return flow ufunction funcall START declare init value from list
 %type <sl> symlist
 
 %nonassoc <fn> CMP
@@ -46,8 +46,7 @@ int yylex();
 
 %start S
 %%
-S: START { print_ast($1, 0, " ");  }
-    
+S: START { print_ast($1, 0, " ");  } 
 
 START: /* nothing */    { $$ = NULL; }
     | START stmts       {$$ = newast('L', $1, $2); optimize_ast($2); eval($2);  }

@@ -3,7 +3,7 @@ FLEX = flex
 BISON = bison
 CFLAGS = -O2 -ggdb -Wall
 
-TARGET = compiler
+TARGET = synthax
 LEX_FILE = lexer.l
 YACC_FILE = parser.y
 AST_FILE = abstract_syntax_tree.c

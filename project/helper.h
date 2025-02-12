@@ -65,7 +65,7 @@ struct ast {
     union {                
         char *s;           /* string value for string nodes */
         double number;     /* Value for constant nodes */
-        struct symbol *sym; // Riferimento al simbolo (per variabili o funzioni)
+        struct symbol *sym; // Symble reference for variable or functions
         enum bifs functype; /* built-in functions */
         struct {           /* control flow */
             struct ast *cond; /* condition */
@@ -75,7 +75,6 @@ struct ast {
     
     } data;
 };
-
 
 /* Symbol table functions */
 struct symbol *lookup(char*);

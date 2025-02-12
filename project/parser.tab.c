@@ -562,13 +562,13 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    49,    49,    52,    53,    54,    55,    56,    59,    64,
-      65,    71,    74,    75,    76,    77,    78,    81,    82,    83,
-      85,    92,    93,    95,    97,    98,   101,   102,   106,   114,
-     115,   116,   117,   118,   119,   121,   122,   123,   124,   125,
-     126,   127,   128,   129,   130,   131,   133,   134,   135,   136,
-     137,   138,   139,   141,   142,   145,   146,   148,   149,   151,
-     153,   154,   156,   157
+       0,    49,    49,    51,    52,    53,    54,    55,    58,    63,
+      64,    70,    73,    74,    75,    76,    77,    80,    81,    82,
+      84,    91,    92,    94,    96,    97,   100,   101,   105,   113,
+     114,   115,   116,   117,   118,   120,   121,   122,   123,   124,
+     125,   126,   127,   128,   129,   130,   132,   133,   134,   135,
+     136,   137,   138,   140,   141,   144,   145,   147,   148,   150,
+     152,   153,   155,   156
 };
 #endif
 
@@ -1520,37 +1520,37 @@ yyreduce:
     break;
 
   case 3: /* START: %empty  */
-#line 52 "parser.y"
+#line 51 "parser.y"
                         { (yyval.a) = NULL; }
 #line 1526 "parser.tab.c"
     break;
 
   case 4: /* START: START stmts  */
-#line 53 "parser.y"
+#line 52 "parser.y"
                         {(yyval.a) = newast('L', (yyvsp[-1].a), (yyvsp[0].a)); optimize_ast((yyvsp[0].a)); eval((yyvsp[0].a));  }
 #line 1532 "parser.tab.c"
     break;
 
   case 5: /* START: START ufunction  */
-#line 54 "parser.y"
+#line 53 "parser.y"
                         { (yyval.a) = newast('L', (yyvsp[-1].a), (yyvsp[0].a)); optimize_ast((yyvsp[0].a)); eval((yyvsp[0].a)); }
 #line 1538 "parser.tab.c"
     break;
 
   case 6: /* START: START error  */
-#line 55 "parser.y"
+#line 54 "parser.y"
                         { yyerrok; printf("> "); }
 #line 1544 "parser.tab.c"
     break;
 
   case 7: /* START: START  */
-#line 56 "parser.y"
+#line 55 "parser.y"
                         { printf("> "); (yyval.a) = (yyvsp[0].a); }
 #line 1550 "parser.tab.c"
     break;
 
   case 8: /* stmts: stmt ';' stmts  */
-#line 59 "parser.y"
+#line 58 "parser.y"
                     { if ((yyvsp[0].a) == NULL) 
         (yyval.a) = (yyvsp[-2].a);
     else 
@@ -1560,13 +1560,13 @@ yyreduce:
     break;
 
   case 9: /* stmts: stmt ';'  */
-#line 64 "parser.y"
+#line 63 "parser.y"
                { (yyval.a) = (yyvsp[-1].a); }
 #line 1566 "parser.tab.c"
     break;
 
   case 10: /* stmts: flow stmts  */
-#line 65 "parser.y"
+#line 64 "parser.y"
                  {  
         if ((yyvsp[0].a) == NULL) 
             (yyval.a) = (yyvsp[-1].a);
@@ -1577,43 +1577,43 @@ yyreduce:
     break;
 
   case 11: /* stmts: flow  */
-#line 71 "parser.y"
+#line 70 "parser.y"
             { (yyval.a) = (yyvsp[0].a); }
 #line 1583 "parser.tab.c"
     break;
 
   case 12: /* stmt: declare  */
-#line 74 "parser.y"
+#line 73 "parser.y"
                     { (yyval.a) = (yyvsp[0].a); }
 #line 1589 "parser.tab.c"
     break;
 
   case 13: /* stmt: assignment  */
-#line 75 "parser.y"
+#line 74 "parser.y"
                     { (yyval.a) = (yyvsp[0].a); }
 #line 1595 "parser.tab.c"
     break;
 
   case 14: /* stmt: funcall  */
-#line 76 "parser.y"
+#line 75 "parser.y"
                     { (yyval.a) = (yyvsp[0].a); }
 #line 1601 "parser.tab.c"
     break;
 
   case 15: /* stmt: return  */
-#line 77 "parser.y"
+#line 76 "parser.y"
                     { (yyval.a) = (yyvsp[0].a); }
 #line 1607 "parser.tab.c"
     break;
 
   case 16: /* stmt: expr  */
-#line 78 "parser.y"
+#line 77 "parser.y"
                     { (yyval.a) = (yyvsp[0].a); }
 #line 1613 "parser.tab.c"
     break;
 
   case 20: /* declare: DATA_TYPE ID init  */
-#line 85 "parser.y"
+#line 84 "parser.y"
                            {
         struct ast *declare = newdeclare((yyvsp[-1].s));
         (yyvsp[-1].s)->type = (yyvsp[-2].dt);
@@ -1624,49 +1624,49 @@ yyreduce:
     break;
 
   case 21: /* init: ASSIGN expr  */
-#line 92 "parser.y"
+#line 91 "parser.y"
                   { (yyval.a) = (yyvsp[0].a); }
 #line 1630 "parser.tab.c"
     break;
 
   case 22: /* init: %empty  */
-#line 93 "parser.y"
+#line 92 "parser.y"
       { (yyval.a) = NULL; }
 #line 1636 "parser.tab.c"
     break;
 
   case 23: /* assignment: ID ASSIGN expr  */
-#line 95 "parser.y"
+#line 94 "parser.y"
                            { (yyval.a) = newasgn((yyvsp[-2].s), (yyvsp[0].a)); }
 #line 1642 "parser.tab.c"
     break;
 
   case 24: /* whether: WHETHER '[' condition ']' THEN ':' '{' stmts '}'  */
-#line 97 "parser.y"
+#line 96 "parser.y"
                                                                                   { (yyval.a) = newflow('I', (yyvsp[-6].a), (yyvsp[-1].a), NULL); }
 #line 1648 "parser.tab.c"
     break;
 
   case 25: /* whether: WHETHER '[' condition ']' THEN ':' '{' stmts '}' OTHERWISE ':' '{' stmts '}'  */
-#line 98 "parser.y"
+#line 97 "parser.y"
                                                                                   { (yyval.a) = newflow('I', (yyvsp[-11].a), (yyvsp[-6].a), (yyvsp[-1].a)); }
 #line 1654 "parser.tab.c"
     break;
 
   case 26: /* when: WHEN '[' condition ']' '{' stmts '}'  */
-#line 101 "parser.y"
+#line 100 "parser.y"
                                                     { (yyval.a) = newflow('W', (yyvsp[-4].a), (yyvsp[-1].a), NULL); }
 #line 1660 "parser.tab.c"
     break;
 
   case 27: /* when: WHEN '{' stmts '}' UNTIL '[' condition ']'  */
-#line 102 "parser.y"
+#line 101 "parser.y"
                                                     { (yyval.a) = newflow('W', (yyvsp[-1].a), (yyvsp[-5].a), (yyvsp[-1].a)); }
 #line 1666 "parser.tab.c"
     break;
 
   case 28: /* from: FROM '[' declare TO expr STEP expr ']' '{' stmts '}'  */
-#line 107 "parser.y"
+#line 106 "parser.y"
      {
          struct ast *add = newast('+', newref((yyvsp[-8].a)->l->data.sym), (yyvsp[-4].a));
          struct ast *ass = newasgn((yyvsp[-8].a)->l->data.sym, add);
@@ -1677,205 +1677,205 @@ yyreduce:
     break;
 
   case 29: /* condition: expr CMP expr  */
-#line 114 "parser.y"
+#line 113 "parser.y"
                                 { (yyval.a) = newcmp((yyvsp[-1].fn), (yyvsp[-2].a), (yyvsp[0].a)); }
 #line 1683 "parser.tab.c"
     break;
 
   case 30: /* condition: condition AND condition  */
-#line 115 "parser.y"
+#line 114 "parser.y"
                                 { (yyval.a) = newast('&', (yyvsp[-2].a), (yyvsp[0].a)); }
 #line 1689 "parser.tab.c"
     break;
 
   case 31: /* condition: condition OR condition  */
-#line 116 "parser.y"
+#line 115 "parser.y"
                                 { (yyval.a) = newast('O', (yyvsp[-2].a), (yyvsp[0].a)); }
 #line 1695 "parser.tab.c"
     break;
 
   case 32: /* condition: NOT condition  */
-#line 117 "parser.y"
+#line 116 "parser.y"
                                 { (yyval.a) = newast('!', (yyvsp[0].a), NULL); }
 #line 1701 "parser.tab.c"
     break;
 
   case 33: /* condition: '(' condition ')'  */
-#line 118 "parser.y"
+#line 117 "parser.y"
                                 { (yyval.a) = (yyvsp[-1].a); }
 #line 1707 "parser.tab.c"
     break;
 
   case 34: /* condition: expr  */
-#line 119 "parser.y"
+#line 118 "parser.y"
                                 { (yyval.a) = (yyvsp[0].a); }
 #line 1713 "parser.tab.c"
     break;
 
   case 35: /* expr: expr PLUS expr  */
-#line 121 "parser.y"
+#line 120 "parser.y"
                                 { (yyval.a) = newast('+', (yyvsp[-2].a), (yyvsp[0].a)); }
 #line 1719 "parser.tab.c"
     break;
 
   case 36: /* expr: expr MINUS expr  */
-#line 122 "parser.y"
+#line 121 "parser.y"
                                 { (yyval.a) = newast('-', (yyvsp[-2].a), (yyvsp[0].a)); }
 #line 1725 "parser.tab.c"
     break;
 
   case 37: /* expr: expr MUL expr  */
-#line 123 "parser.y"
+#line 122 "parser.y"
                                 { (yyval.a) = newast('*', (yyvsp[-2].a), (yyvsp[0].a)); }
 #line 1731 "parser.tab.c"
     break;
 
   case 38: /* expr: expr DIV expr  */
-#line 124 "parser.y"
+#line 123 "parser.y"
                                 { (yyval.a) = newast('/', (yyvsp[-2].a), (yyvsp[0].a)); }
 #line 1737 "parser.tab.c"
     break;
 
   case 39: /* expr: expr POW expr  */
-#line 125 "parser.y"
+#line 124 "parser.y"
                                 { (yyval.a) = newast('^', (yyvsp[-2].a), (yyvsp[0].a)); }
 #line 1743 "parser.tab.c"
     break;
 
   case 40: /* expr: expr MOD expr  */
-#line 126 "parser.y"
+#line 125 "parser.y"
                                 { (yyval.a) = newast('%', (yyvsp[-2].a),(yyvsp[0].a)); }
 #line 1749 "parser.tab.c"
     break;
 
   case 41: /* expr: ABS expr ABS  */
-#line 127 "parser.y"
+#line 126 "parser.y"
                                 { (yyval.a) = newast('|', (yyvsp[-1].a), NULL); }
 #line 1755 "parser.tab.c"
     break;
 
   case 42: /* expr: MINUS expr  */
-#line 128 "parser.y"
+#line 127 "parser.y"
                                 { (yyval.a) = newast('M', (yyvsp[0].a), NULL); }
 #line 1761 "parser.tab.c"
     break;
 
   case 43: /* expr: '(' expr ')'  */
-#line 129 "parser.y"
+#line 128 "parser.y"
                                 { (yyval.a) = (yyvsp[-1].a); }
 #line 1767 "parser.tab.c"
     break;
 
   case 44: /* expr: value  */
-#line 130 "parser.y"
+#line 129 "parser.y"
                                 { (yyval.a) = (yyvsp[0].a); }
 #line 1773 "parser.tab.c"
     break;
 
   case 45: /* expr: funcall  */
-#line 131 "parser.y"
+#line 130 "parser.y"
                                 { (yyval.a) = (yyvsp[0].a); }
 #line 1779 "parser.tab.c"
     break;
 
   case 46: /* value: %empty  */
-#line 133 "parser.y"
+#line 132 "parser.y"
                 {(yyval.a) = NULL;}
 #line 1785 "parser.tab.c"
     break;
 
   case 47: /* value: NUM  */
-#line 134 "parser.y"
+#line 133 "parser.y"
                 { (yyval.a) = newnum((yyvsp[0].num));}
 #line 1791 "parser.tab.c"
     break;
 
   case 48: /* value: BINARY  */
-#line 135 "parser.y"
+#line 134 "parser.y"
                 { (yyval.a) = newnum((yyvsp[0].num)); }
 #line 1797 "parser.tab.c"
     break;
 
   case 49: /* value: ROMAN  */
-#line 136 "parser.y"
+#line 135 "parser.y"
                 { (yyval.a) = newnum((yyvsp[0].num)); }
 #line 1803 "parser.tab.c"
     break;
 
   case 50: /* value: ID  */
-#line 137 "parser.y"
+#line 136 "parser.y"
                 { (yyval.a) = newref((yyvsp[0].s)); }
 #line 1809 "parser.tab.c"
     break;
 
   case 51: /* value: STR  */
-#line 138 "parser.y"
+#line 137 "parser.y"
                 { (yyval.a) = newstr((yyvsp[0].st)); }
 #line 1815 "parser.tab.c"
     break;
 
   case 52: /* value: list  */
-#line 139 "parser.y"
+#line 138 "parser.y"
                 { (yyval.a) = (yyvsp[0].a); }
 #line 1821 "parser.tab.c"
     break;
 
   case 53: /* list: '[' ']'  */
-#line 141 "parser.y"
+#line 140 "parser.y"
                       { (yyval.a) = NULL; }
 #line 1827 "parser.tab.c"
     break;
 
   case 54: /* list: '[' explist ']'  */
-#line 142 "parser.y"
+#line 141 "parser.y"
                       { (yyval.a) = (yyvsp[-1].a); }
 #line 1833 "parser.tab.c"
     break;
 
   case 56: /* explist: expr ',' explist  */
-#line 146 "parser.y"
+#line 145 "parser.y"
                        { (yyval.a) = newast('[', (yyvsp[-2].a), (yyvsp[0].a)); }
 #line 1839 "parser.tab.c"
     break;
 
   case 57: /* symlist: ID  */
-#line 148 "parser.y"
+#line 147 "parser.y"
                      { (yyval.sl) = newsymlist((yyvsp[0].s), NULL); }
 #line 1845 "parser.tab.c"
     break;
 
   case 58: /* symlist: ID ',' symlist  */
-#line 149 "parser.y"
+#line 148 "parser.y"
                      { (yyval.sl) = newsymlist((yyvsp[-2].s), (yyvsp[0].sl)); }
 #line 1851 "parser.tab.c"
     break;
 
   case 59: /* return: RETURN expr  */
-#line 151 "parser.y"
+#line 150 "parser.y"
                      { (yyval.a) = newast('R', (yyvsp[0].a), NULL); }
 #line 1857 "parser.tab.c"
     break;
 
   case 60: /* ufunction: DEFINE ID '(' symlist ')' '{' stmts '}'  */
-#line 153 "parser.y"
+#line 152 "parser.y"
                                                     { dodef((yyvsp[-6].s),(yyvsp[-4].sl),(yyvsp[-1].a)); (yyval.a) = newdeclare((yyvsp[-6].s));/* printf("Function %s defined\n", $2->name);*/ }
 #line 1863 "parser.tab.c"
     break;
 
   case 61: /* ufunction: DEFINE ID '(' ')' '{' stmts '}'  */
-#line 154 "parser.y"
+#line 153 "parser.y"
                                                     { dodef((yyvsp[-5].s),NULL,(yyvsp[-1].a)); (yyval.a) = newdeclare((yyvsp[-5].s)); /*printf("Function %s defined\n", $2->name);*/ }
 #line 1869 "parser.tab.c"
     break;
 
   case 62: /* funcall: ID '(' explist ')'  */
-#line 156 "parser.y"
+#line 155 "parser.y"
                             { (yyval.a) = newcall((yyvsp[-3].s), (yyvsp[-1].a)); }
 #line 1875 "parser.tab.c"
     break;
 
   case 63: /* funcall: FUNC '(' explist ')'  */
-#line 157 "parser.y"
+#line 156 "parser.y"
                             { (yyval.a) = newfunc((yyvsp[-3].fn), (yyvsp[-1].a)); }
 #line 1881 "parser.tab.c"
     break;
@@ -2105,7 +2105,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 160 "parser.y"
+#line 159 "parser.y"
 
 
 int main(int argc, char **argv) {
