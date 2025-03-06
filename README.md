@@ -1,4 +1,4 @@
-# My Custom Programming Language
+# Flex & Bison Compiler construction
 
 ## Introduction
 This project is a custom programming language designed and implemented as part of my Bachelor's degree in Computer science. The language introduces unique syntax and features that facilitate working with numbers, strings, lists, and control structures. It also provides built-in functions for mathematical operations and user interaction.
